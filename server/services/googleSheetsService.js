@@ -52,6 +52,9 @@ async function addTransaction(data) {
   const formattedDate = formatDate(date);
   const numericAmount = Number(amount);
 
+  const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
+  const finalPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod.trim() : '-';
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
@@ -61,7 +64,7 @@ async function addTransaction(data) {
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [["'" + formattedDate, description, category, numericAmount, paymentMethod, notes]]
+          values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes]]
         }
       });
 
@@ -126,6 +129,9 @@ async function updateTransaction(id, data) {
   const numericAmount = Number(amount);
   const targetId = parseInt(id, 10);
 
+  const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
+  const finalPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod.trim() : '-';
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
@@ -139,7 +145,7 @@ async function updateTransaction(id, data) {
           range: `TRANSACTIONS!A${rowNum}:F${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [["'" + formattedDate, description, category, numericAmount, paymentMethod, notes]]
+            values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes]]
           }
         });
 
@@ -259,6 +265,8 @@ async function addEarning(data) {
   const formattedDate = formatDate(date);
   const numericAmount = Number(amount);
 
+  const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
@@ -268,7 +276,7 @@ async function addEarning(data) {
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [["'" + formattedDate, description, source, numericAmount, notes]]
+          values: [["'" + formattedDate, description, source, numericAmount, finalNotes]]
         }
       });
 
@@ -317,6 +325,8 @@ async function updateEarning(id, data) {
   const numericAmount = Number(amount);
   const targetId = parseInt(id, 10);
 
+  const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
@@ -330,7 +340,7 @@ async function updateEarning(id, data) {
           range: `EARNINGS!A${rowNum}:E${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [["'" + formattedDate, description, source, numericAmount, notes]]
+            values: [["'" + formattedDate, description, source, numericAmount, finalNotes]]
           }
         });
 
