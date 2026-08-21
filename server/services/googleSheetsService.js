@@ -61,7 +61,7 @@ async function addTransaction(data) {
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [[formattedDate, description, category, numericAmount, paymentMethod, notes]]
+          values: [["'" + formattedDate, description, category, numericAmount, paymentMethod, notes]]
         }
       });
 
@@ -139,7 +139,7 @@ async function updateTransaction(id, data) {
           range: `TRANSACTIONS!A${rowNum}:F${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [[formattedDate, description, category, numericAmount, paymentMethod, notes]]
+            values: [["'" + formattedDate, description, category, numericAmount, paymentMethod, notes]]
           }
         });
 
@@ -268,7 +268,7 @@ async function addEarning(data) {
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [[formattedDate, description, source, numericAmount, notes]]
+          values: [["'" + formattedDate, description, source, numericAmount, notes]]
         }
       });
 
@@ -330,7 +330,7 @@ async function updateEarning(id, data) {
           range: `EARNINGS!A${rowNum}:E${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [[formattedDate, description, source, numericAmount, notes]]
+            values: [["'" + formattedDate, description, source, numericAmount, notes]]
           }
         });
 
