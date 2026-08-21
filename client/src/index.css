@@ -6,6 +6,31 @@
   }
 }
 
+/* Fix mobile date & form input overflow */
+input[type="date"],
+input[type="month"],
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Native WebKit Calendar Indicator Styling */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 2px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

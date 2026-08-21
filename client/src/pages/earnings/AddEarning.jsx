@@ -109,7 +109,7 @@ export default function AddEarning() {
               value={dateIso}
               onChange={(e) => setDateIso(e.target.value)}
               required
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-emerald-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              className="w-full max-w-full box-border bg-slate-950/70 border border-slate-800 focus:border-emerald-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
             />
             <p className="mt-1 text-xs text-slate-500">
               Display format: <span className="text-slate-300 font-mono">{isoToDDMMYYYY(dateIso)}</span>

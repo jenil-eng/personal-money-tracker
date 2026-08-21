@@ -133,7 +133,7 @@ export default function EditTransaction() {
               value={dateIso}
               onChange={(e) => setDateIso(e.target.value)}
               required
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none transition"
+              className="w-full max-w-full box-border bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none transition"
             />
           </div>
 
