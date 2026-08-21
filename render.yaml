@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: personal-money-tracker-backend
+    env: node
+    region: singapore # or frankfurt/oregon
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5050
+      - key: AUTH_SECRET
+        value: personal_money_tracker_super_secret_jwt_key_2026
+      - key: ADMIN_EMAIL
+        value: admin@student.com
+      - key: ADMIN_PASSWORD
+        value: password123
+      - key: GOOGLE_SHEET_ID
+        value: 1VG44hGnKjLDJQWtUKXTzrHP-4payUZQYGFtQEm8U31I
+      - key: GOOGLE_SERVICE_ACCOUNT_EMAIL
+        value: money-tracker-bot@personal-money-tracker-506205.iam.gserviceaccount.com
+      - key: GOOGLE_PRIVATE_KEY
+        sync: false # Set manually in Render Dashboard for security
