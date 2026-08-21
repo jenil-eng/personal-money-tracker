@@ -1,0 +1,40 @@
+{
+  "transactions": [],
+  "earnings": [],
+  "lists": {
+    "categories": [
+      "Food",
+      "Travel",
+      "Shopping",
+      "Entertainment",
+      "Education",
+      "Bills",
+      "Personal",
+      "Other",
+      "TestCategory",
+      "TestCategory"
+    ],
+    "sources": [
+      "Pocket Money",
+      "Gift",
+      "Freelancing",
+      "Business",
+      "Navratri",
+      "Scholarship",
+      "Refund",
+      "Other",
+      "TestSource",
+      "TestSource"
+    ],
+    "paymentMethods": [
+      "Cash",
+      "UPI",
+      "Debit Card",
+      "Credit Card",
+      "Bank Transfer",
+      "Other",
+      "TestPayment",
+      "TestPayment"
+    ]
+  }
+}
