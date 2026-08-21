@@ -41,9 +41,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(`Personal Money Tracker Server running on port ${PORT}`);
-  console.log(`Google Sheets API Mode: ${isSheetsConfigured() ? 'Active (Connected)' : 'Fallback Mock Mode (data/store.json)'}`);
-  console.log(`==================================================`);
-});
+if (process.env.NODE_ENV !== 'production' || require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`==================================================`);
+    console.log(`Personal Money Tracker Server running on port ${PORT}`);
+    console.log(`Google Sheets API Mode: ${isSheetsConfigured() ? 'Active (Connected)' : 'Fallback Mock Mode (data/store.json)'}`);
+    console.log(`==================================================`);
+  });
+}
+
+module.exports = app;
