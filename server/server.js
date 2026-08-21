@@ -15,13 +15,23 @@ const PORT = process.env.PORT || 5050;
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/earnings', earningRoutes);
-app.use('/api/settings', settingsRoutes);
+// Root & Health check endpoints
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Personal Money Tracker Backend API is online!',
+    googleSheetsConfigured: isSheetsConfigured(),
+    health: '/api/health',
+    timestamp: new Date().toISOString()
+  });
+});
 
-// Health check endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Personal Money Tracker API',
+    endpoints: ['/api/auth', '/api/transactions', '/api/earnings', '/api/settings', '/api/health']
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
@@ -29,6 +39,12 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/earnings', earningRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // 404 Handler
 app.use((req, res) => {
