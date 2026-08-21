@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://personal-money-tracker-backend.onrender.com/api' : '/api')
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://personal-money-tracker-theta.vercel.app/api' : '/api')
 });
 
 // Attach Authorization Bearer token to all outgoing requests
