@@ -108,22 +108,24 @@ export default function AddTransaction() {
       </div>
 
       {/* Form Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-8 shadow-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* FIELD 1: DATE */}
-          <div>
+          <div className="w-full max-w-full overflow-hidden">
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-rose-500" />
+              <Calendar className="w-4 h-4 text-rose-500 shrink-0" />
               <span>1. Date (DD-MM-YYYY)</span>
             </label>
-            <input
-              type="date"
-              value={dateIso}
-              onChange={(e) => setDateIso(e.target.value)}
-              required
-              className="w-full max-w-full box-border bg-slate-950/70 border border-slate-800 focus:border-rose-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500 transition"
-            />
+            <div className="w-full max-w-full overflow-hidden rounded-xl">
+              <input
+                type="date"
+                value={dateIso}
+                onChange={(e) => setDateIso(e.target.value)}
+                required
+                className="w-full max-w-full box-border bg-slate-950/70 border border-slate-800 focus:border-rose-500 rounded-xl py-3 px-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500 transition"
+              />
+            </div>
             <p className="mt-1 text-xs text-slate-500">
               Display format: <span className="text-slate-300 font-mono">{isoToDDMMYYYY(dateIso)}</span>
             </p>

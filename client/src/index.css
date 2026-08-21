@@ -6,15 +6,33 @@
   }
 }
 
-/* Fix mobile date & form input overflow */
+/* Comprehensive iOS Safari & WebKit Date Input Overflow Fix */
 input[type="date"],
 input[type="month"],
 input[type="text"],
 input[type="number"],
 select,
 textarea {
+  width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* Force iOS Safari Shadow DOM date value alignment and bounds */
+input[type="date"],
+input[type="month"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: block !important;
+  min-height: 48px;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="month"]::-webkit-date-and-time-value {
+  text-align: left !important;
+  min-height: 1.5em;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Native WebKit Calendar Indicator Styling */
@@ -23,7 +41,8 @@ input[type="month"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
   cursor: pointer;
   opacity: 0.8;
-  padding: 2px;
+  padding: 0;
+  margin-left: auto;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover,
