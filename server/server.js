@@ -35,6 +35,7 @@ app.get('/api', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
+    version: 'v1.0.2-parseAmount-fix',
     googleSheetsConfigured: isSheetsConfigured(),
     timestamp: new Date().toISOString()
   });
