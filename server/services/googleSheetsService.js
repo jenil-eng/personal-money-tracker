@@ -209,9 +209,15 @@ async function updateTransaction(id, data) {
     }
   }
 
-  return {
-    id: target.id,
-    rowNumber: rowNum,
+  // Fallback
+  const store = mockStore.readStore();
+  const index = findRecordIndex(store.transactions, targetId);
+  if (index === -1) {
+    throw new Error('Transaction not found.');
+  }
+
+  store.transactions[index] = {
+    ...store.transactions[index],
     date: formattedDate,
     description,
     category,
@@ -220,32 +226,9 @@ async function updateTransaction(id, data) {
     paymentMethod,
     notes
   };
-}
-    } catch (error) {
-  console.warn('Google Sheets update failed, updating local store fallback:', error.message);
-}
-  }
 
-// Fallback
-const store = mockStore.readStore();
-const index = findRecordIndex(store.transactions, targetId);
-if (index === -1) {
-  throw new Error('Transaction not found.');
-}
-
-store.transactions[index] = {
-  ...store.transactions[index],
-  date: formattedDate,
-  description,
-  category,
-  subcategory: finalSubcategory,
-  amount: numericAmount,
-  paymentMethod,
-  notes
-};
-
-mockStore.writeStore(store);
-return store.transactions[index];
+  mockStore.writeStore(store);
+  return store.transactions[index];
 }
 
 async function deleteTransaction(id) {
