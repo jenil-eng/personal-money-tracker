@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Wallet, Lock, Mail, ArrowRight, AlertCircle, Zap } from 'lucide-react';
+import { Wallet, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -32,7 +32,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('Auto Sign In successful!');
+      toast.success('JWT Authenticated! Welcome back.');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password. Please try again.';
@@ -58,15 +58,15 @@ export default function Login() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Personal Money Tracker</h1>
           <p className="mt-2 text-sm text-slate-400">Private Student Finance Dashboard</p>
 
-          <div className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-semibold">
-            <Zap className="w-3.5 h-3.5" />
-            <span>Auto Login Enabled</span>
+          <div className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>JWT Token Authentication</span>
           </div>
         </div>
 
         {/* Login Form Card */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-          <h2 className="text-xl font-bold text-slate-100 mb-6">Private Admin Sign In</h2>
+          <h2 className="text-xl font-bold text-slate-100 mb-6">Secure Sign In</h2>
 
           {error && (
             <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start space-x-3 text-rose-400 text-sm">
@@ -78,7 +78,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Admin Email
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -118,20 +118,20 @@ export default function Login() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  <span>Signing In...</span>
+                  <span>Verifying JWT...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In to Dashboard</span>
+                  <span>Sign In with JWT</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-800/80 text-center">
-            <p className="text-xs text-slate-500">
-              Private access. Automatic single-user login enabled.
+          <div className="mt-6 pt-6 border-t border-slate-800/80 text-center space-y-2">
+            <p className="text-xs text-slate-400 font-medium">
+              Default Credentials: <code className="text-indigo-300 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">admin@student.com</code> / <code className="text-indigo-300 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">password123</code>
             </p>
           </div>
         </div>

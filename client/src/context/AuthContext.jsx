@@ -48,11 +48,11 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data.user);
           localStorage.setItem('pmt_user', JSON.stringify(response.data.user));
         } catch (err) {
-          console.error('Session expired, executing auto-login:', err);
-          await autoLogin();
+          console.warn('JWT token invalid or expired. Logging out user:', err);
+          logout();
         }
       } else {
-        await autoLogin();
+        setUser(null);
       }
       setLoading(false);
     };

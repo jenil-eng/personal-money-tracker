@@ -18,7 +18,14 @@ router.post('/login', (req, res) => {
   const targetEmail = ADMIN_EMAIL.trim().toLowerCase();
 
   if (sanitizedEmail === targetEmail && password === ADMIN_PASSWORD) {
-    const token = jwt.sign({ email: targetEmail, role: 'admin' }, JWT_SECRET, {
+    const payload = {
+      email: targetEmail,
+      name: 'Admin User',
+      role: 'admin',
+      iat: Math.floor(Date.now() / 1000)
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, {
       expiresIn: '7d'
     });
 
@@ -26,6 +33,7 @@ router.post('/login', (req, res) => {
       token,
       user: {
         email: targetEmail,
+        name: 'Admin User',
         role: 'admin'
       }
     });
