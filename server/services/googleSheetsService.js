@@ -28,17 +28,45 @@ async function readTransactions() {
     });
 
     const rows = response.data.values || [];
-    return rows.map((row, index) => ({
-      id: index + 1, // Unique ID mapped from index
-      rowNumber: index + 2, // Row number in sheet (header is row 1)
-      date: formatDate(row[0] || ''),
-      description: row[1] || '',
-      category: row[2] || '',
-      subcategory: row[3] || '',
-      amount: parseAmount(row[4]),
-      paymentMethod: row[5] || '',
-      notes: row[6] || ''
-    }));
+    return rows.map((row, index) => {
+      const date = formatDate(row[0] || '');
+      const description = row[1] || '';
+      const category = row[2] || '';
+
+      const amt3 = parseAmount(row[3]);
+      const amt4 = parseAmount(row[4]);
+
+      let subcategory = '';
+      let amount = 0;
+      let paymentMethod = '';
+      let notes = '';
+
+      if (amt3 > 0 && (!amt4 || amt4 === 0)) {
+        // Col D is Amount
+        amount = amt3;
+        paymentMethod = row[4] || '';
+        notes = row[5] || '';
+        subcategory = row[6] || '';
+      } else {
+        // Col D is Subcategory, Col E is Amount
+        subcategory = row[3] || '';
+        amount = amt4 > 0 ? amt4 : (amt3 || 0);
+        paymentMethod = row[5] || '';
+        notes = row[6] || '';
+      }
+
+      return {
+        id: index + 1,
+        rowNumber: index + 2,
+        date,
+        description,
+        category,
+        subcategory,
+        amount,
+        paymentMethod,
+        notes
+      };
+    });
   } catch (error) {
     console.warn('Google Sheets API unavailable, using local store fallback:', error.message);
     const store = mockStore.readStore();
@@ -171,32 +199,9 @@ async function updateTransaction(id, data) {
     }
   }
 
-        return {
-          id: target.id,
-          rowNumber: rowNum,
-          date: formattedDate,
-          description,
-          category,
-          subcategory: finalSubcategory,
-          amount: numericAmount,
-          paymentMethod,
-          notes
-        };
-      }
-    } catch (error) {
-      console.warn('Google Sheets update failed, updating local store fallback:', error.message);
-    }
-  }
-
-  // Fallback
-  const store = mockStore.readStore();
-  const index = findRecordIndex(store.transactions, targetId);
-  if (index === -1) {
-    throw new Error('Transaction not found.');
-  }
-
-  store.transactions[index] = {
-    ...store.transactions[index],
+  return {
+    id: target.id,
+    rowNumber: rowNum,
     date: formattedDate,
     description,
     category,
@@ -205,9 +210,32 @@ async function updateTransaction(id, data) {
     paymentMethod,
     notes
   };
+}
+    } catch (error) {
+  console.warn('Google Sheets update failed, updating local store fallback:', error.message);
+}
+  }
 
-  mockStore.writeStore(store);
-  return store.transactions[index];
+// Fallback
+const store = mockStore.readStore();
+const index = findRecordIndex(store.transactions, targetId);
+if (index === -1) {
+  throw new Error('Transaction not found.');
+}
+
+store.transactions[index] = {
+  ...store.transactions[index],
+  date: formattedDate,
+  description,
+  category,
+  subcategory: finalSubcategory,
+  amount: numericAmount,
+  paymentMethod,
+  notes
+};
+
+mockStore.writeStore(store);
+return store.transactions[index];
 }
 
 async function deleteTransaction(id) {
@@ -557,7 +585,7 @@ async function deletePaymentMethod(methodName) {
 
 async function saveLists(lists) {
   const client = getGoogleSheetsClient();
-  
+
   // Always keep mock store updated
   const store = mockStore.readStore();
   store.lists = lists;
