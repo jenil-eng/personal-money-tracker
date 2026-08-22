@@ -146,12 +146,20 @@ export default function Analytics() {
     return dateStr;
   };
 
+  // Helper to parse numeric amounts safely from numbers or formatted strings
+  const safeParseAmount = (v) => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (!v) return 0;
+    const num = Number(String(v).replace(/[^0-9.-]+/g, ''));
+    return isNaN(num) ? 0 : num;
+  };
+
   const dailyMap = {};
   transactions.forEach(t => {
     const dKey = normalizeDateKey(t.date);
     if (!dKey) return;
     if (!dailyMap[dKey]) dailyMap[dKey] = { expenses: 0, income: 0, items: [] };
-    const amt = parseAmount(t.amount);
+    const amt = safeParseAmount(t.amount);
     dailyMap[dKey].expenses += amt;
     dailyMap[dKey].items.push({ ...t, amount: amt, recordType: 'expense' });
   });
@@ -160,7 +168,7 @@ export default function Analytics() {
     const dKey = normalizeDateKey(e.date);
     if (!dKey) return;
     if (!dailyMap[dKey]) dailyMap[dKey] = { expenses: 0, income: 0, items: [] };
-    const amt = parseAmount(e.amount);
+    const amt = safeParseAmount(e.amount);
     dailyMap[dKey].income += amt;
     dailyMap[dKey].items.push({ ...e, amount: amt, recordType: 'income', category: e.source });
   });
@@ -175,8 +183,8 @@ export default function Analytics() {
     const dKey = normalizeDateKey(e.date);
     return dKey && dKey.slice(3) === selectedMonthStr;
   });
-  const monthTotalSpent = currentMonthTxns.reduce((sum, t) => sum + (parseAmount(t.amount) || 0), 0);
-  const monthTotalEarned = currentMonthEarn.reduce((sum, e) => sum + (parseAmount(e.amount) || 0), 0);
+  const monthTotalSpent = currentMonthTxns.reduce((sum, t) => sum + (safeParseAmount(t.amount) || 0), 0);
+  const monthTotalEarned = currentMonthEarn.reduce((sum, e) => sum + (safeParseAmount(e.amount) || 0), 0);
   const monthNetFlow = monthTotalEarned - monthTotalSpent;
 
   // Daily Expense Timeline (Day-by-day trend & peak spikes)
