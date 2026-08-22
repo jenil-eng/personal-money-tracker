@@ -52,7 +52,18 @@ function parseDDMMYYYY(ddmmyyyy) {
   return new Date(str);
 }
 
+// Parse numeric amount safely from numbers or formatted currency strings (e.g. "₹300", "₹5,624" -> 300, 5624)
+function parseAmount(val) {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  const cleaned = String(val).replace(/[^0-9.-]+/g, '');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 module.exports = {
   formatDate,
-  parseDDMMYYYY
+  parseDDMMYYYY,
+  parseAmount
 };
+

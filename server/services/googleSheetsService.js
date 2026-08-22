@@ -1,6 +1,6 @@
 const { getGoogleSheetsClient } = require('../config/googleSheets');
 const mockStore = require('./mockStoreService');
-const { formatDate } = require('../utils/formatters');
+const { formatDate, parseAmount } = require('../utils/formatters');
 
 // Helper to determine if Google Sheets API is configured and operational
 function isSheetsConfigured() {
@@ -34,7 +34,7 @@ async function readTransactions() {
       date: formatDate(row[0] || ''),
       description: row[1] || '',
       category: row[2] || '',
-      amount: parseFloat(row[3]) || 0,
+      amount: parseAmount(row[3]),
       paymentMethod: row[4] || '',
       notes: row[5] || ''
     }));
@@ -248,7 +248,7 @@ async function readEarnings() {
       date: formatDate(row[0] || ''),
       description: row[1] || '',
       source: row[2] || '',
-      amount: parseFloat(row[3]) || 0,
+      amount: parseAmount(row[3]),
       notes: row[4] || ''
     }));
   } catch (error) {
