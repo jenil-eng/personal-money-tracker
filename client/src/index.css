@@ -2,37 +2,82 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white;
+    @apply bg-[#030712] text-slate-100 font-sans antialiased min-h-screen selection:bg-cyan-500 selection:text-black;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.07) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.07) 0%, transparent 40%),
+      radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
+    background-attachment: fixed;
   }
 }
 
-/* Glassmorphism & Custom Design Utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* ----------------------------------------------------
+ * FUTURISTIC CYBER-LUXE DESIGN SYSTEM UTILITIES
+ * ---------------------------------------------------- */
+
+/* Cyber Glass Panel */
+.glass-panel,
+.cyber-glass {
+  background: rgba(10, 15, 30, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
 }
 
-.glass-panel-hover {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.glass-panel-hover,
+.cyber-glass-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.glass-panel-hover:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
-  transform: translateY(-2px);
+
+.glass-panel-hover:hover,
+.cyber-glass-hover:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 
+    0 0 25px -5px rgba(56, 189, 248, 0.2),
+    0 15px 35px -10px rgba(0, 0, 0, 0.7);
+  transform: translateY(-3px) scale(1.005);
+}
+
+/* Neon Glow Accents */
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+}
+
+.glow-magenta {
+  box-shadow: 0 0 25px -5px rgba(217, 70, 239, 0.4);
 }
 
 .glow-expense {
-  box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.15);
+  box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.3);
 }
 
 .glow-income {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
 }
 
 .glow-indigo {
-  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35);
+}
+
+/* Futuristic Gradient Text */
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-rose {
+  background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* iOS Safe Area Padding for Mobile Bottom Bar */
@@ -43,6 +88,7 @@
 /* Comprehensive Input & Touch Target Utilities */
 input[type="text"],
 input[type="number"],
+input[type="password"],
 textarea {
   box-sizing: border-box;
 }
@@ -54,12 +100,27 @@ input[type="month"] {
   box-sizing: border-box;
 }
 
+/* Cyber Form Inputs */
+.cyber-input {
+  background: rgba(3, 7, 18, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.875rem !important;
+  color: #f8fafc !important;
+  transition: all 0.2s ease;
+}
+
+.cyber-input:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 15px -3px rgba(56, 189, 248, 0.3) !important;
+  outline: none !important;
+}
+
 /* Force iOS Safari Shadow DOM date value alignment and bounds */
 input[type="date"],
 input[type="month"] {
   -webkit-appearance: none;
   appearance: none;
-  min-height: 42px;
+  min-height: 44px;
 }
 
 input[type="date"]::-webkit-date-and-time-value,
@@ -73,9 +134,9 @@ input[type="month"]::-webkit-date-and-time-value {
 /* Native WebKit Calendar Indicator Styling */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="month"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.8);
+  filter: invert(0.9) hue-rotate(180deg);
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.85;
   padding: 0;
   margin-left: auto;
 }
@@ -85,21 +146,23 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
 
-/* Custom Scrollbar */
+/* Custom Cyber Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(3, 7, 18, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(56, 189, 248, 0.25);
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+  background: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
 }
