@@ -34,10 +34,10 @@ async function readTransactions() {
       date: formatDate(row[0] || ''),
       description: row[1] || '',
       category: row[2] || '',
-      amount: parseAmount(row[3]),
-      paymentMethod: row[4] || '',
-      notes: row[5] || '',
-      subcategory: row[6] || ''
+      subcategory: row[3] || '',
+      amount: parseAmount(row[4]),
+      paymentMethod: row[5] || '',
+      notes: row[6] || ''
     }));
   } catch (error) {
     console.warn('Google Sheets API unavailable, using local store fallback:', error.message);
@@ -66,7 +66,7 @@ async function addTransaction(data) {
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes, finalSubcategory]]
+          values: [["'" + formattedDate, description, category, finalSubcategory, numericAmount, finalPaymentMethod, finalNotes]]
         }
       });
 
@@ -150,9 +150,26 @@ async function updateTransaction(id, data) {
           range: `TRANSACTIONS!A${rowNum}:G${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes, finalSubcategory]]
+            values: [["'" + formattedDate, description, category, finalSubcategory, numericAmount, finalPaymentMethod, finalNotes]]
           }
         });
+
+        return {
+          id: target.id,
+          rowNumber: rowNum,
+          date: formattedDate,
+          description,
+          category,
+          subcategory: finalSubcategory,
+          amount: numericAmount,
+          paymentMethod,
+          notes
+        };
+      }
+    } catch (error) {
+      console.warn('Google Sheets update failed, updating local store fallback:', error.message);
+    }
+  }
 
         return {
           id: target.id,

@@ -8,7 +8,7 @@ async function updateGoogleSheetSubcategories() {
   }
 
   const { sheets, spreadsheetId } = client;
-  console.log('Syncing Subcategories to Google Sheet:', spreadsheetId);
+  console.log('Reordering Subcategory to Column D (between Category and Amount) in Google Sheet:', spreadsheetId);
 
   try {
     const meta = await sheets.spreadsheets.get({ spreadsheetId });
@@ -58,14 +58,62 @@ async function updateGoogleSheetSubcategories() {
       'Miscellaneous'
     ];
 
-    // 1. Update headers in TRANSACTIONS (A1:G1) and LISTS (A1:D1)
+    // 1. Fetch current TRANSACTIONS rows to reorder columns if needed
+    const txRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'TRANSACTIONS!A1:Z100',
+      valueRenderOption: 'UNFORMATTED_VALUE'
+    });
+
+    const currentRows = txRes.data.values || [];
+
+    // Header row
+    const newHeader = ['Date', 'Description', 'Category', 'Subcategory', 'Amount', 'Payment Method', 'Notes'];
+
+    // Process data rows (if any)
+    const newDataRows = currentRows.slice(1).map(row => {
+      // Old order could be: Date(0), Desc(1), Cat(2), Amt(3), PM(4), Notes(5), Subcat(6)
+      // or already modified. Let's inspect:
+      const date = row[0] || '';
+      const desc = row[1] || '';
+      const cat = row[2] || '';
+
+      let subcat = '';
+      let amt = '';
+      let pm = '';
+      let notes = '';
+
+      // Check if row[3] is numeric (Amount) or string (Subcategory)
+      if (typeof row[3] === 'number' || (typeof row[3] === 'string' && !isNaN(parseFloat(row[3])) && parseFloat(row[3]) > 0)) {
+        amt = row[3];
+        pm = row[4] || '';
+        notes = row[5] || '';
+        subcat = row[6] || '';
+      } else {
+        subcat = row[3] || '';
+        amt = row[4] || '';
+        pm = row[5] || '';
+        notes = row[6] || '';
+      }
+
+      return ["'" + String(date).replace(/^'/, ''), desc, cat, subcat, amt, pm, notes];
+    });
+
+    // 2. Clear old range & update with new column structure
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: 'TRANSACTIONS!A1:Z100'
+    });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `TRANSACTIONS!A1:G${newDataRows.length + 1}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [newHeader, ...newDataRows] }
+    });
+
+    // 3. Update LISTS
     await Promise.all([
-      sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: 'TRANSACTIONS!A1:G1',
-        valueInputOption: 'USER_ENTERED',
-        requestBody: { values: [['Date', 'Description', 'Category', 'Amount', 'Payment Method', 'Notes', 'Subcategory']] }
-      }),
       sheets.spreadsheets.values.update({
         spreadsheetId,
         range: 'LISTS!A1:D1',
@@ -90,10 +138,10 @@ async function updateGoogleSheetSubcategories() {
 
     const requests = [];
 
-    // Format Header Column G in TRANSACTIONS (Subcategory)
+    // Header Row 1 formatting (A1:G1)
     requests.push({
       repeatCell: {
-        range: { sheetId: txSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 6, endColumnIndex: 7 },
+        range: { sheetId: txSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 7 },
         cell: {
           userEnteredFormat: {
             backgroundColor: ROSE_RED,
@@ -106,41 +154,50 @@ async function updateGoogleSheetSubcategories() {
       }
     });
 
-    // Set Column Width for Column G (Subcategory)
-    requests.push({
-      updateDimensionProperties: {
-        range: { sheetId: txSheetId, dimension: 'COLUMNS', startIndex: 6, endIndex: 7 },
-        properties: { pixelSize: 180 },
-        fields: 'pixelSize'
-      }
+    // Set Column Widths for TRANSACTIONS (A..G)
+    // Date:140, Desc:250, Cat:160, Subcat:180, Amt:140, PM:160, Notes:280
+    const colWidths = [140, 250, 160, 180, 140, 160, 280];
+    colWidths.forEach((w, idx) => {
+      requests.push({
+        updateDimensionProperties: {
+          range: { sheetId: txSheetId, dimension: 'COLUMNS', startIndex: idx, endIndex: idx + 1 },
+          properties: { pixelSize: w },
+          fields: 'pixelSize'
+        }
+      });
     });
 
-    // Format Header Column D in LISTS (Subcategories)
+    // Format Currency Column E (Amount)
     requests.push({
       repeatCell: {
-        range: { sheetId: listsSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 3, endColumnIndex: 4 },
+        range: { sheetId: txSheetId, startRowIndex: 1, endRowIndex: 200, startColumnIndex: 4, endColumnIndex: 5 },
         cell: {
           userEnteredFormat: {
-            backgroundColor: INDIGO_BLUE,
-            textFormat: { fontFamily: 'Arial', fontSize: 10, bold: true, foregroundColor: WHITE_TEXT },
-            horizontalAlignment: 'CENTER',
-            verticalAlignment: 'MIDDLE'
+            numberFormat: { type: 'CURRENCY', pattern: '₹#,##0' },
+            textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: TEXT_DARK },
+            horizontalAlignment: 'RIGHT'
           }
         },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)'
+        fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment)'
       }
     });
 
-    // Set Column Width for LISTS Column D
+    // Format Date Column A
     requests.push({
-      updateDimensionProperties: {
-        range: { sheetId: listsSheetId, dimension: 'COLUMNS', startIndex: 3, endIndex: 4 },
-        properties: { pixelSize: 200 },
-        fields: 'pixelSize'
+      repeatCell: {
+        range: { sheetId: txSheetId, startRowIndex: 1, endRowIndex: 200, startColumnIndex: 0, endColumnIndex: 1 },
+        cell: {
+          userEnteredFormat: {
+            numberFormat: { type: 'DATE', pattern: 'dd-mm-yyyy' },
+            textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: TEXT_DARK },
+            horizontalAlignment: 'CENTER'
+          }
+        },
+        fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment)'
       }
     });
 
-    // Gridlines for Column G in TRANSACTIONS
+    // Gridlines for Column A..G in TRANSACTIONS
     requests.push({
       updateBorders: {
         range: { sheetId: txSheetId, startRowIndex: 0, endRowIndex: 200, startColumnIndex: 0, endColumnIndex: 7 },
@@ -153,10 +210,10 @@ async function updateGoogleSheetSubcategories() {
       }
     });
 
-    // Data Validation: Subcategory Dropdown in TRANSACTIONS (Column G) pulling from LISTS!D2:D
+    // Data Validation: Subcategory Dropdown in Column D (startColumnIndex: 3, endColumnIndex: 4)
     requests.push({
       setDataValidation: {
-        range: { sheetId: txSheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 6, endColumnIndex: 7 },
+        range: { sheetId: txSheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 3, endColumnIndex: 4 },
         rule: {
           condition: {
             type: 'ONE_OF_RANGE',
@@ -168,15 +225,15 @@ async function updateGoogleSheetSubcategories() {
       }
     });
 
-    console.log('Sending batchUpdate for Subcategory column & data validation...');
+    console.log('Sending batchUpdate for updated column order (Subcategory as Column D)...');
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
       requestBody: { requests }
     });
 
-    console.log('🎉 SUBCATEGORY FEATURE SUCCESSFULLY ADDED TO GOOGLE SHEET!');
+    console.log('🎉 REORDERED SUBCATEGORY TO COLUMN D IN GOOGLE SHEET SUCCESSFULLY!');
   } catch (error) {
-    console.error('Error updating Google Sheet subcategories:', error.message);
+    console.error('Error updating Google Sheet column order:', error.message);
   }
 }
 
