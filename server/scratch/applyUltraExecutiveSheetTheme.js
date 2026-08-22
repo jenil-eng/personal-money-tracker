@@ -8,7 +8,7 @@ async function applyUltraExecutiveSheetTheme() {
   }
 
   const { sheets, spreadsheetId } = client;
-  console.log('Applying Ultra-Executive Professional Theme to Google Sheet:', spreadsheetId);
+  console.log('Restoring Ultra-Executive Professional Theme with 7 Columns on Google Sheet:', spreadsheetId);
 
   try {
     const meta = await sheets.spreadsheets.get({ spreadsheetId });
@@ -59,8 +59,35 @@ async function applyUltraExecutiveSheetTheme() {
       });
     });
 
-    const formatSheet = (sheetId, headerBg, colsCount, colWidths, isEarning = false) => {
-      // 1. Row Heights
+    // 1. Update Header Row 1 text values
+    await Promise.all([
+      sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: 'TRANSACTIONS!A1:G1',
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [['Date', 'Description', 'Category', 'Subcategory', 'Amount', 'Payment Method', 'Notes']] }
+      }),
+      sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: 'EARNINGS!A1:E1',
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [['Date', 'Description', 'Source', 'Amount', 'Notes']] }
+      }),
+      sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: 'LISTS!A1:D1',
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [['Transaction Categories', 'Earning Sources', 'Payment Methods', 'Subcategories']] }
+      })
+    ]);
+
+    // Format TRANSACTIONS Sheet (7 Columns: Date, Desc, Cat, Subcat, Amount, PM, Notes)
+    const formatTransactionsSheet = () => {
+      const sheetId = txSheetId;
+      const colsCount = 7;
+      const colWidths = [140, 260, 160, 180, 150, 170, 290];
+
+      // Row heights
       requests.push({
         updateDimensionProperties: {
           range: { sheetId, dimension: 'ROWS', startIndex: 0, endIndex: 1 },
@@ -70,13 +97,13 @@ async function applyUltraExecutiveSheetTheme() {
       });
       requests.push({
         updateDimensionProperties: {
-          range: { sheetId, dimension: 'ROWS', startIndex: 1, endIndex: 500 },
+          range: { sheetId, dimension: 'ROWS', startIndex: 1, endIndex: 300 },
           properties: { pixelSize: 32 },
           fields: 'pixelSize'
         }
       });
 
-      // 2. Column Widths
+      // Column widths
       colWidths.forEach((w, idx) => {
         requests.push({
           updateDimensionProperties: {
@@ -87,13 +114,13 @@ async function applyUltraExecutiveSheetTheme() {
         });
       });
 
-      // 3. Header Styling (44px, Bold White, Dark Header Fills)
+      // Header style
       requests.push({
         repeatCell: {
           range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: colsCount },
           cell: {
             userEnteredFormat: {
-              backgroundColor: headerBg,
+              backgroundColor: TX_HEADER_BG,
               textFormat: { fontFamily: 'Arial', fontSize: 11, bold: true, foregroundColor: WHITE_TEXT },
               horizontalAlignment: 'CENTER',
               verticalAlignment: 'MIDDLE'
@@ -103,15 +130,15 @@ async function applyUltraExecutiveSheetTheme() {
         }
       });
 
-      // Header Bottom Border
+      // Header bottom border (Rose Red)
       requests.push({
         updateBorders: {
           range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: colsCount },
-          bottom: { style: 'SOLID_MEDIUM', color: isEarning ? INCOME_GREEN : EXPENSE_RED }
+          bottom: { style: 'SOLID_MEDIUM', color: EXPENSE_RED }
         }
       });
 
-      // 4. Alternating Row Colors (Zebra Striping)
+      // Alternating Zebra striping rows
       for (let r = 1; r < 300; r++) {
         const bg = (r % 2 === 0) ? ZEBRA_BG : WHITE_BG;
         requests.push({
@@ -123,7 +150,7 @@ async function applyUltraExecutiveSheetTheme() {
         });
       }
 
-      // 5. Gridlines
+      // Gridlines
       requests.push({
         updateBorders: {
           range: { sheetId, startRowIndex: 0, endRowIndex: 300, startColumnIndex: 0, endColumnIndex: colsCount },
@@ -136,92 +163,108 @@ async function applyUltraExecutiveSheetTheme() {
         }
       });
 
-      // 6. Data Columns (Date, Description, Category, Amount, Payment, Notes)
-      if (sheetId !== listsSheetId) {
-        // Date (Col A): Centered, Muted Text
-        requests.push({
-          repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 0, endColumnIndex: 1 },
-            cell: {
-              userEnteredFormat: {
-                numberFormat: { type: 'DATE', pattern: 'dd-mm-yyyy' },
-                textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: MUTED_TEXT },
-                horizontalAlignment: 'CENTER',
-                verticalAlignment: 'MIDDLE'
-              }
-            },
-            fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment,verticalAlignment)'
-          }
-        });
+      // Date (Col A): Centered Date dd-mm-yyyy
+      requests.push({
+        repeatCell: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 0, endColumnIndex: 1 },
+          cell: {
+            userEnteredFormat: {
+              numberFormat: { type: 'DATE', pattern: 'dd-mm-yyyy' },
+              textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: MUTED_TEXT },
+              horizontalAlignment: 'CENTER',
+              verticalAlignment: 'MIDDLE'
+            }
+          },
+          fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment,verticalAlignment)'
+        }
+      });
 
-        // Description (Col B): Left-aligned, Bold Dark Text
-        requests.push({
-          repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 1, endColumnIndex: 2 },
-            cell: {
-              userEnteredFormat: {
-                textFormat: { fontFamily: 'Arial', fontSize: 10, bold: true, foregroundColor: DARK_TEXT },
-                horizontalAlignment: 'LEFT',
-                verticalAlignment: 'MIDDLE'
-              }
-            },
-            fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment)'
-          }
-        });
+      // Description (Col B): Left, Bold Dark Text
+      requests.push({
+        repeatCell: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 1, endColumnIndex: 2 },
+          cell: {
+            userEnteredFormat: {
+              textFormat: { fontFamily: 'Arial', fontSize: 10, bold: true, foregroundColor: DARK_TEXT },
+              horizontalAlignment: 'LEFT',
+              verticalAlignment: 'MIDDLE'
+            }
+          },
+          fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment)'
+        }
+      });
 
-        // Category / Source (Col C): Centered, Soft Pill Fill
-        requests.push({
-          repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 2, endColumnIndex: 3 },
-            cell: {
-              userEnteredFormat: {
-                backgroundColor: CATEGORY_BG,
-                textFormat: { fontFamily: 'Arial', fontSize: 10, bold: true, foregroundColor: DARK_TEXT },
-                horizontalAlignment: 'CENTER',
-                verticalAlignment: 'MIDDLE'
-              }
-            },
-            fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)'
-          }
-        });
+      // Category (Col C) & Subcategory (Col D): Soft Pill Fill
+      requests.push({
+        repeatCell: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 2, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: CATEGORY_BG,
+              textFormat: { fontFamily: 'Arial', fontSize: 10, bold: true, foregroundColor: DARK_TEXT },
+              horizontalAlignment: 'CENTER',
+              verticalAlignment: 'MIDDLE'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)'
+        }
+      });
 
-        // Amount (Col D): Right-aligned, Bold Colored Currency
-        const amtColor = isEarning ? INCOME_GREEN : EXPENSE_RED;
-        requests.push({
-          repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 3, endColumnIndex: 4 },
-            cell: {
-              userEnteredFormat: {
-                numberFormat: { type: 'CURRENCY', pattern: '₹#,##0' },
-                textFormat: { fontFamily: 'Arial', fontSize: 11, bold: true, foregroundColor: amtColor },
-                horizontalAlignment: 'RIGHT',
-                verticalAlignment: 'MIDDLE'
-              }
-            },
-            fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment,verticalAlignment)'
-          }
-        });
+      // Amount (Col E): Right-aligned, Bold Rose Red Currency
+      requests.push({
+        repeatCell: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 4, endColumnIndex: 5 },
+          cell: {
+            userEnteredFormat: {
+              numberFormat: { type: 'CURRENCY', pattern: '₹#,##0' },
+              textFormat: { fontFamily: 'Arial', fontSize: 11, bold: true, foregroundColor: EXPENSE_RED },
+              horizontalAlignment: 'RIGHT',
+              verticalAlignment: 'MIDDLE'
+            }
+          },
+          fields: 'userEnteredFormat(numberFormat,textFormat,horizontalAlignment,verticalAlignment)'
+        }
+      });
 
-        // Payment / Notes (Col E & F): Centered / Left Muted Text
-        requests.push({
-          repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 4, endColumnIndex: colsCount },
-            cell: {
-              userEnteredFormat: {
-                textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: MUTED_TEXT },
-                horizontalAlignment: 'CENTER',
-                verticalAlignment: 'MIDDLE'
-              }
-            },
-            fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment)'
-          }
-        });
-      }
+      // Payment Method (Col F) & Notes (Col G): Muted Text
+      requests.push({
+        repeatCell: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 300, startColumnIndex: 5, endColumnIndex: 7 },
+          cell: {
+            userEnteredFormat: {
+              textFormat: { fontFamily: 'Arial', fontSize: 10, foregroundColor: MUTED_TEXT },
+              horizontalAlignment: 'CENTER',
+              verticalAlignment: 'MIDDLE'
+            }
+          },
+          fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment)'
+        }
+      });
+
+      // Data Validations
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 2, endColumnIndex: 3 },
+          rule: { condition: { type: 'ONE_OF_RANGE', values: [{ userEnteredValue: '=LISTS!$A$2:$A' }] }, showCustomUi: true, strict: false }
+        }
+      });
+
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 3, endColumnIndex: 4 },
+          rule: { condition: { type: 'ONE_OF_RANGE', values: [{ userEnteredValue: '=LISTS!$D$2:$D' }] }, showCustomUi: true, strict: false }
+        }
+      });
+
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 5, endColumnIndex: 6 },
+          rule: { condition: { type: 'ONE_OF_RANGE', values: [{ userEnteredValue: '=LISTS!$C$2:$C' }] }, showCustomUi: true, strict: false }
+        }
+      });
     };
 
-    formatSheet(txSheetId, TX_HEADER_BG, 6, [140, 260, 170, 150, 170, 290], false);
-    formatSheet(earnSheetId, EARN_HEADER_BG, 5, [140, 260, 170, 150, 290], true);
-    formatSheet(listsSheetId, LISTS_HEADER_BG, 3, [220, 220, 220], false);
+    formatTransactionsSheet();
 
     console.log('Sending batchUpdate for Ultra-Executive Theme...');
     await sheets.spreadsheets.batchUpdate({
@@ -229,7 +272,7 @@ async function applyUltraExecutiveSheetTheme() {
       requestBody: { requests }
     });
 
-    console.log('🎉 ULTRA-EXECUTIVE PROFESSIONAL THEME APPLIED TO GOOGLE SHEET!');
+    console.log('🎉 ULTRA-EXECUTIVE PROFESSIONAL THEME RESTORED SUCCESSFULLY TO GOOGLE SHEET!');
   } catch (error) {
     console.error('Error applying theme:', error.message);
   }
