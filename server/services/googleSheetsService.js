@@ -437,7 +437,7 @@ async function readLists() {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'LISTS!A2:C'
+      range: 'LISTS!A2:D'
     });
 
     const rows = response.data.values || [];
@@ -445,11 +445,13 @@ async function readLists() {
     const categories = new Set();
     const sources = new Set();
     const paymentMethods = new Set();
+    const subcategories = new Set();
 
     rows.forEach(row => {
       if (row[0] && row[0].trim()) categories.add(row[0].trim());
       if (row[1] && row[1].trim()) sources.add(row[1].trim());
       if (row[2] && row[2].trim()) paymentMethods.add(row[2].trim());
+      if (row[3] && row[3].trim()) subcategories.add(row[3].trim());
     });
 
     const store = mockStore.readStore();
@@ -457,7 +459,8 @@ async function readLists() {
     return {
       categories: categories.size > 0 ? Array.from(categories) : store.lists.categories,
       sources: sources.size > 0 ? Array.from(sources) : store.lists.sources,
-      paymentMethods: paymentMethods.size > 0 ? Array.from(paymentMethods) : store.lists.paymentMethods
+      paymentMethods: paymentMethods.size > 0 ? Array.from(paymentMethods) : store.lists.paymentMethods,
+      subcategories: subcategories.size > 0 ? Array.from(subcategories) : (store.lists.subcategories || [])
     };
   } catch (error) {
     console.warn('Google Sheets read lists failed, returning local store lists:', error.message);
