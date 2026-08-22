@@ -28,31 +28,41 @@ async function readTransactions() {
     });
 
     const rows = response.data.values || [];
+    const knownPMs = ['cash', 'upi', 'debit card', 'credit card', 'bank transfer', 'other', '-'];
+
     return rows.map((row, index) => {
       const date = formatDate(row[0] || '');
       const description = row[1] || '';
       const category = row[2] || '';
 
-      const amt3 = parseAmount(row[3]);
-      const amt4 = parseAmount(row[4]);
+      const val3 = row[3] !== undefined ? row[3] : '';
+      const val4 = row[4] !== undefined ? row[4] : '';
+      const val5 = row[5] !== undefined ? row[5] : '';
+      const val6 = row[6] !== undefined ? row[6] : '';
+
+      const num3 = parseAmount(val3);
+      const num4 = parseAmount(val4);
 
       let subcategory = '';
       let amount = 0;
       let paymentMethod = '';
       let notes = '';
 
-      if (amt3 > 0 && (!amt4 || amt4 === 0)) {
-        // Col D is Amount
-        amount = amt3;
-        paymentMethod = row[4] || '';
-        notes = row[5] || '';
-        subcategory = row[6] || '';
+      if (num4 > 0 || knownPMs.includes(String(val5).toLowerCase().trim())) {
+        subcategory = String(val3);
+        amount = num4 > 0 ? num4 : num3;
+        paymentMethod = String(val5);
+        notes = String(val6);
+      } else if (num3 > 0 || knownPMs.includes(String(val4).toLowerCase().trim())) {
+        amount = num3;
+        paymentMethod = String(val4);
+        notes = String(val5);
+        subcategory = String(val6);
       } else {
-        // Col D is Subcategory, Col E is Amount
-        subcategory = row[3] || '';
-        amount = amt4 > 0 ? amt4 : (amt3 || 0);
-        paymentMethod = row[5] || '';
-        notes = row[6] || '';
+        amount = num4 || num3 || 0;
+        subcategory = String(val3);
+        paymentMethod = String(val5 || val4);
+        notes = String(val6);
       }
 
       return {
