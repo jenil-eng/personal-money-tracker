@@ -182,62 +182,59 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. CYBER-LUXE METRIC STAT CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {/* 2. FINTECH 3-METRIC STAT CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Balance */}
-        <div className="cyber-glass cyber-glass-hover rounded-3xl p-6 shadow-2xl border-l-4 border-l-cyan-400 relative overflow-hidden group">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/20 transition-all duration-300" />
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-indigo-500">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-widest text-cyan-400">Total Capital Balance</span>
-            <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 glow-cyan">
-              <Wallet className="w-6 h-6" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Balance</span>
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <Wallet className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl sm:text-4xl font-black text-white mt-4 tracking-tight text-gradient-cyan">
+          <p className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
             {formatAmount(totalSavings)}
           </p>
-          <p className="text-xs text-slate-400 mt-2 font-medium">Net available wealth pool</p>
+          <p className="text-xs text-slate-400 mt-1">Available capital balance</p>
         </div>
 
         {/* Total Income */}
-        <div className="cyber-glass cyber-glass-hover rounded-3xl p-6 shadow-2xl border-l-4 border-l-emerald-400 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-300" />
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-emerald-500 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Total Income</span>
-              <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 glow-income">
-                <ArrowUpCircle className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Income</span>
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ArrowUpCircle className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-3xl sm:text-4xl font-black text-emerald-400 mt-4 tracking-tight text-gradient-emerald">
+            <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-3 tracking-tight">
               {formatAmount(totalIncome)}
             </p>
           </div>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
-            <span className="text-xs text-slate-400 font-medium">{earnings.length} Income Records</span>
-            <Link to="/earnings" className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center space-x-1">
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/60">
+            <span className="text-xs text-slate-400">{earnings.length} records</span>
+            <Link to="/earnings" className="text-xs font-semibold text-emerald-400 hover:underline flex items-center space-x-1">
               <span>View Earnings →</span>
             </Link>
           </div>
         </div>
 
         {/* Total Expenses */}
-        <div className="cyber-glass cyber-glass-hover rounded-3xl p-6 shadow-2xl border-l-4 border-l-rose-500 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-rose-500/20 transition-all duration-300" />
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-rose-500 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-widest text-rose-400">Total Expenses</span>
-              <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/30 glow-expense">
-                <ArrowDownCircle className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</span>
+              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <ArrowDownCircle className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-3xl sm:text-4xl font-black text-rose-400 mt-4 tracking-tight text-gradient-rose">
+            <p className="text-2xl sm:text-3xl font-black text-rose-400 mt-3 tracking-tight">
               {formatAmount(totalExpenses)}
             </p>
           </div>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
-            <span className="text-xs text-slate-400 font-medium">{transactions.length} Expense Records</span>
-            <Link to="/transactions/history" className="text-xs font-bold text-rose-400 hover:text-rose-300 transition flex items-center space-x-1">
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/60">
+            <span className="text-xs text-slate-400">{transactions.length} records</span>
+            <Link to="/transactions/history" className="text-xs font-semibold text-rose-400 hover:underline flex items-center space-x-1">
               <span>View Expenses →</span>
             </Link>
           </div>
@@ -245,32 +242,29 @@ export default function Dashboard() {
       </div>
 
       {/* 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON CARD */}
-      <div className="cyber-glass rounded-3xl p-6 shadow-2xl border border-slate-800/80">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-black uppercase tracking-widest text-cyan-400 flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <span>Monthly Cashflow Comparison</span>
-          </span>
-          <span className="text-xs font-bold text-slate-400 bg-slate-950 px-3 py-1 rounded-full border border-slate-800">{formatMonthLabel(currentMonthISO)}</span>
+      <div className="glass-panel rounded-2xl p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Monthly Spending Comparison</span>
+          <span className="text-[11px] font-semibold text-slate-400">{formatMonthLabel(currentMonthISO)}</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
           <div>
-            <span className="text-xs text-slate-400 font-medium">Current Month Outflow:</span>
-            <p className="text-2xl font-black text-white mt-1">{formatAmount(currentMonthExpenses)}</p>
+            <span className="text-xs text-slate-400">Current Month Spending:</span>
+            <p className="text-xl font-extrabold text-white mt-0.5">{formatAmount(currentMonthExpenses)}</p>
           </div>
 
           <div>
-            <span className="text-xs text-slate-400 font-medium">Previous Month ({formatMonthLabel(prevMonthISO)}):</span>
-            <p className="text-2xl font-bold text-slate-300 mt-1">{formatAmount(prevMonthExpenses)}</p>
+            <span className="text-xs text-slate-400">Previous Month ({formatMonthLabel(prevMonthISO)}):</span>
+            <p className="text-xl font-semibold text-slate-300 mt-0.5">{formatAmount(prevMonthExpenses)}</p>
           </div>
 
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90 shadow-inner">
-            <span className="text-xs text-slate-400 font-semibold">Velocity Shift:</span>
-            <span className={`inline-flex items-center space-x-1 font-black text-xs px-3 py-1.5 rounded-xl ${
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+            <span className="text-xs text-slate-400 font-medium">Month-over-Month Change:</span>
+            <span className={`inline-flex items-center space-x-1 font-extrabold text-xs px-2.5 py-1 rounded-md ${
               momPercentChange <= 0 
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 glow-income' 
-                : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 glow-expense'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
             }`}>
               {momPercentChange <= 0 ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
               <span>{momPercentChange > 0 ? `+${momPercentChange}%` : `${momPercentChange}%`}</span>
