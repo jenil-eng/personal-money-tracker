@@ -142,13 +142,22 @@ export default function TransactionHistory() {
     return true;
   });
 
-  // Sorting Logic
+  // Sorting Logic with Deterministic Secondary Entry Order Sort
   const sortedRecords = [...filteredRecords].sort((a, b) => {
-    if (sortOption === 'newest') return b.timestamp - a.timestamp;
-    if (sortOption === 'oldest') return a.timestamp - b.timestamp;
-    if (sortOption === 'highest') return (Number(b.amount) || 0) - (Number(a.amount) || 0);
-    if (sortOption === 'lowest') return (Number(a.amount) || 0) - (Number(b.amount) || 0);
-    return b.timestamp - a.timestamp;
+    let comp = 0;
+    if (sortOption === 'newest') comp = b.timestamp - a.timestamp;
+    else if (sortOption === 'oldest') comp = a.timestamp - b.timestamp;
+    else if (sortOption === 'highest') comp = (Number(b.amount) || 0) - (Number(a.amount) || 0);
+    else if (sortOption === 'lowest') comp = (Number(a.amount) || 0) - (Number(b.amount) || 0);
+
+    // Secondary sort: if timestamps or amounts are equal, sort by entry position (latest entry first for newest)
+    if (comp === 0) {
+      const idA = Number(a.id || a.rowNumber || 0);
+      const idB = Number(b.id || b.rowNumber || 0);
+      return (sortOption === 'oldest' || sortOption === 'lowest') ? idA - idB : idB - idA;
+    }
+
+    return comp;
   });
 
   // Monthly Grouping
@@ -523,12 +532,38 @@ export default function TransactionHistory() {
           /* STANDARD TABLE VIEW */
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950/80 text-xs uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800">
+              <thead className="bg-slate-950/80 text-xs uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800 select-none">
                 <tr>
-                  <th className="py-3.5 px-4">Date</th>
+                  <th 
+                    onClick={() => { setSortOption(sortOption === 'newest' ? 'oldest' : 'newest'); setCurrentPage(1); }}
+                    className="py-3.5 px-4 cursor-pointer hover:text-white transition group"
+                    title="Click to toggle Date sort order"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Date</span>
+                      {(sortOption === 'newest' || sortOption === 'oldest') ? (
+                        sortOption === 'newest' ? <ChevronDown className="w-3.5 h-3.5 text-indigo-400" /> : <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-600 opacity-60 group-hover:opacity-100" />
+                      )}
+                    </div>
+                  </th>
                   <th className="py-3.5 px-4">Description</th>
                   <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Amount</th>
+                  <th 
+                    onClick={() => { setSortOption(sortOption === 'highest' ? 'lowest' : 'highest'); setCurrentPage(1); }}
+                    className="py-3.5 px-4 cursor-pointer hover:text-white transition group"
+                    title="Click to toggle Amount sort order"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Amount</span>
+                      {(sortOption === 'highest' || sortOption === 'lowest') ? (
+                        sortOption === 'highest' ? <ChevronDown className="w-3.5 h-3.5 text-indigo-400" /> : <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-600 opacity-60 group-hover:opacity-100" />
+                      )}
+                    </div>
+                  </th>
                   <th className="py-3.5 px-4">Payment Method</th>
                   <th className="py-3.5 px-4 hidden md:table-cell">Notes</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>

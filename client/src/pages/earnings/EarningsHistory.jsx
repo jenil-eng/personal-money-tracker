@@ -92,6 +92,7 @@ export default function EarningsHistory() {
   });
 
   // Sorting
+  // Sorting Logic with Deterministic Secondary Entry Order Sort
   const sortedEarnings = [...filteredEarnings].sort((a, b) => {
     let comparison = 0;
     if (sortField === 'date') {
@@ -101,6 +102,13 @@ export default function EarningsHistory() {
     } else if (sortField === 'amount') {
       comparison = (Number(a.amount) || 0) - (Number(b.amount) || 0);
     }
+
+    if (comparison === 0) {
+      const idA = Number(a.id || a.rowNumber || 0);
+      const idB = Number(b.id || b.rowNumber || 0);
+      comparison = idA - idB;
+    }
+
     return sortOrder === 'desc' ? -comparison : comparison;
   });
 
