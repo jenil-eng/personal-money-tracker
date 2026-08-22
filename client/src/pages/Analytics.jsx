@@ -124,27 +124,59 @@ export default function Analytics() {
     setSelectedDayDate(null);
   };
 
+  // Normalize any date string into standardized 'DD-MM-YYYY' format
+  const normalizeDateKey = (dateStr) => {
+    if (!dateStr) return '';
+    const cleanStr = String(dateStr).trim().replace(/[\/\.]/g, '-');
+    const parts = cleanStr.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY-MM-DD -> DD-MM-YYYY
+        const y = parts[0];
+        const m = String(parts[1]).padStart(2, '0');
+        const d = String(parts[2]).padStart(2, '0');
+        return `${d}-${m}-${y}`;
+      }
+      // DD-MM-YYYY or D-M-YYYY
+      const d = String(parts[0]).padStart(2, '0');
+      const m = String(parts[1]).padStart(2, '0');
+      const y = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+      return `${d}-${m}-${y}`;
+    }
+    return dateStr;
+  };
+
   const dailyMap = {};
   transactions.forEach(t => {
-    const dStr = t.date;
-    if (!dailyMap[dStr]) dailyMap[dStr] = { expenses: 0, income: 0, items: [] };
-    dailyMap[dStr].expenses += Number(t.amount) || 0;
-    dailyMap[dStr].items.push({ ...t, recordType: 'expense' });
+    const dKey = normalizeDateKey(t.date);
+    if (!dKey) return;
+    if (!dailyMap[dKey]) dailyMap[dKey] = { expenses: 0, income: 0, items: [] };
+    const amt = parseAmount(t.amount);
+    dailyMap[dKey].expenses += amt;
+    dailyMap[dKey].items.push({ ...t, amount: amt, recordType: 'expense' });
   });
 
   earnings.forEach(e => {
-    const dStr = e.date;
-    if (!dailyMap[dStr]) dailyMap[dStr] = { expenses: 0, income: 0, items: [] };
-    dailyMap[dStr].income += Number(e.amount) || 0;
-    dailyMap[dStr].items.push({ ...e, recordType: 'income', category: e.source });
+    const dKey = normalizeDateKey(e.date);
+    if (!dKey) return;
+    if (!dailyMap[dKey]) dailyMap[dKey] = { expenses: 0, income: 0, items: [] };
+    const amt = parseAmount(e.amount);
+    dailyMap[dKey].income += amt;
+    dailyMap[dKey].items.push({ ...e, amount: amt, recordType: 'income', category: e.source });
   });
 
   // Current Selected Month Cashflow Stats
   const selectedMonthStr = `${String(month + 1).padStart(2, '0')}-${year}`;
-  const currentMonthTxns = transactions.filter(t => t.date && t.date.slice(3) === selectedMonthStr);
-  const currentMonthEarn = earnings.filter(e => e.date && e.date.slice(3) === selectedMonthStr);
-  const monthTotalSpent = currentMonthTxns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  const monthTotalEarned = currentMonthEarn.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const currentMonthTxns = transactions.filter(t => {
+    const dKey = normalizeDateKey(t.date);
+    return dKey && dKey.slice(3) === selectedMonthStr;
+  });
+  const currentMonthEarn = earnings.filter(e => {
+    const dKey = normalizeDateKey(e.date);
+    return dKey && dKey.slice(3) === selectedMonthStr;
+  });
+  const monthTotalSpent = currentMonthTxns.reduce((sum, t) => sum + (parseAmount(t.amount) || 0), 0);
+  const monthTotalEarned = currentMonthEarn.reduce((sum, e) => sum + (parseAmount(e.amount) || 0), 0);
   const monthNetFlow = monthTotalEarned - monthTotalSpent;
 
   // Daily Expense Timeline (Day-by-day trend & peak spikes)
