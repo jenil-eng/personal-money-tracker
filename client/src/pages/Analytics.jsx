@@ -79,6 +79,20 @@ export default function Analytics() {
     ? [...transactions].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))[0]
     : null;
 
+  // Compact Amount Formatter for Mobile Calendar Cells (e.g., -₹12.5k instead of -₹12505)
+  const formatCompactAmount = (amt) => {
+    const absVal = Math.abs(amt);
+    const sign = amt < 0 ? '-' : amt > 0 ? '+' : '';
+    if (absVal >= 100000) {
+      return `${sign}₹${(absVal / 100000).toFixed(1)}L`;
+    }
+    if (absVal >= 1000) {
+      const numK = absVal / 1000;
+      return `${sign}₹${numK % 1 === 0 ? numK.toFixed(0) : numK.toFixed(1)}k`;
+    }
+    return `${sign}₹${absVal}`;
+  };
+
   // Daily Spending Average (over last 30 days)
   const dailySpendingAvg = Math.round(totalExpenses / 30);
 
@@ -408,19 +422,15 @@ export default function Analytics() {
 
                 {/* Bottom Row: Daily Amount Pill Badge */}
                 {dayData && (dayData.income > 0 || dayData.expenses > 0) && (
-                  <div className="mt-1 text-right">
-                    <span className={`text-[10px] sm:text-xs font-black tracking-tight inline-block px-1.5 py-0.5 rounded-lg border shadow-sm ${
+                  <div className="mt-1 text-right overflow-hidden">
+                    <span className={`text-[9px] sm:text-xs font-black tracking-tight inline-block px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-md sm:rounded-lg border shadow-sm max-w-full truncate ${
                       netAmount < 0 
                         ? 'bg-rose-500/15 border-rose-500/30 text-rose-300' 
                         : netAmount > 0 
                           ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' 
                           : 'bg-slate-800 border-slate-700 text-slate-300'
                     }`}>
-                      {netAmount < 0 
-                        ? `-₹${Math.abs(netAmount)}` 
-                        : netAmount > 0 
-                          ? `+₹${netAmount}` 
-                          : '₹0'}
+                      {formatCompactAmount(netAmount)}
                     </span>
                   </div>
                 )}
@@ -431,18 +441,18 @@ export default function Analytics() {
 
         {/* Selected Day Transaction Details Inspector Drawer */}
         {selectedDayDate && (
-          <div className="mt-5 p-5 rounded-2xl bg-slate-950/95 border border-indigo-500/50 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 relative">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-base font-extrabold text-white">Activity Inspector for {selectedDayDate}</h3>
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+          <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-slate-950/95 border border-indigo-500/50 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 relative">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-white">Activity Inspector for {selectedDayDate}</h3>
+                <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30 shrink-0">
                   {dailyMap[selectedDayDate]?.items.length || 0} Records
                 </span>
               </div>
               <button
                 onClick={() => setSelectedDayDate(null)}
-                className="text-xs font-bold text-slate-400 hover:text-white px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
+                className="self-end sm:self-auto text-xs font-bold text-slate-400 hover:text-white px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
               >
                 ✕ Close
               </button>
@@ -461,26 +471,26 @@ export default function Analytics() {
                         isExp ? 'border-rose-500/20 border-l-4 border-l-rose-500' : 'border-emerald-500/20 border-l-4 border-l-emerald-500'
                       }`}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-xl ${isExp ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                      <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0 flex-1 pr-2">
+                        <div className={`p-2 rounded-xl shrink-0 ${isExp ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
                           {isExp ? <ArrowDownCircle className="w-4 h-4" /> : <ArrowUpCircle className="w-4 h-4" />}
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-100 text-sm">{item.description}</p>
-                          <div className="flex items-center space-x-2 mt-0.5">
-                            <span className="text-[11px] text-slate-400 font-medium">{item.category}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-slate-100 text-xs sm:text-sm truncate">{item.description}</p>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">{item.category}</span>
                             <span className="text-slate-600">•</span>
-                            <span className="text-[11px] text-slate-400 font-medium">{item.paymentMethod || 'UPI'}</span>
+                            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">{item.paymentMethod || 'UPI'}</span>
                             {item.notes && (
                               <>
                                 <span className="text-slate-600">•</span>
-                                <span className="text-[11px] text-slate-500 italic truncate max-w-[150px]">{item.notes}</span>
+                                <span className="text-[10px] sm:text-[11px] text-slate-500 italic truncate max-w-[120px] sm:max-w-[200px]">{item.notes}</span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
-                      <p className={`font-black text-base tracking-tight ${isExp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      <p className={`font-black text-sm sm:text-base tracking-tight shrink-0 text-right ${isExp ? 'text-rose-400' : 'text-emerald-400'}`}>
                         {isExp ? `- ${formatAmount(item.amount)}` : `+ ${formatAmount(item.amount)}`}
                       </p>
                     </div>
