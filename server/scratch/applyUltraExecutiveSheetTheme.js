@@ -241,7 +241,27 @@ async function applyUltraExecutiveSheetTheme() {
         }
       });
 
-      // Data Validations
+      // Clear Data Validations from non-dropdown columns (Date A, Desc B, Amount E, Notes G)
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 0, endColumnIndex: 2 },
+          rule: null
+        }
+      });
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 4, endColumnIndex: 5 },
+          rule: null
+        }
+      });
+      requests.push({
+        setDataValidation: {
+          range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 6, endColumnIndex: 10 },
+          rule: null
+        }
+      });
+
+      // Data Validations for Dropdown Columns (Category C, Subcategory D, Payment Method F)
       requests.push({
         setDataValidation: {
           range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 2, endColumnIndex: 3 },
