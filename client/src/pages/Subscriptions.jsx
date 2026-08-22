@@ -406,7 +406,7 @@ export default function Subscriptions() {
 
       {/* ADD SUBSCRIPTION MODAL */}
       {showAddModal && (
-        <Modal title="Add New Recurring Subscription" onClose={() => setShowAddModal(false)}>
+        <Modal isOpen={true} title="Add New Recurring Subscription" onClose={() => setShowAddModal(false)}>
           <form onSubmit={handleAddSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
@@ -535,7 +535,7 @@ export default function Subscriptions() {
 
       {/* EDIT SUBSCRIPTION MODAL */}
       {editItem && (
-        <Modal title={`Edit "${editItem.name}"`} onClose={() => setEditItem(null)}>
+        <Modal isOpen={true} title={`Edit "${editItem.name}"`} onClose={() => setEditItem(null)}>
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
@@ -661,7 +661,7 @@ export default function Subscriptions() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteItem && (
-        <Modal title="Confirm Delete" onClose={() => setDeleteItem(null)}>
+        <Modal isOpen={true} title="Confirm Delete" onClose={() => setDeleteItem(null)}>
           <div className="space-y-4">
             <p className="text-slate-300 text-sm">
               Are you sure you want to delete the subscription <strong className="text-white">"{deleteItem.name}"</strong>?
