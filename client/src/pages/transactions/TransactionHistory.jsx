@@ -18,7 +18,11 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Layers,
-  List
+  List,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -32,6 +36,9 @@ export default function TransactionHistory() {
 
   // Type Filter: 'all' | 'expense' | 'income'
   const [typeFilter, setTypeFilter] = useState('all');
+
+  // Advanced Filters Toggle State
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -245,13 +252,13 @@ export default function TransactionHistory() {
       {/* SEARCH AND FILTERS PANEL */}
       <div className="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
         
-        {/* ROW 1: TYPE TOGGLE & SEARCH BAR */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* ROW 1: TYPE SEGMENTED TOGGLE, SEARCH BAR & EXPAND BUTTON */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
           {/* Income vs Expense Filter Buttons */}
-          <div className="flex items-center space-x-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center space-x-1 bg-slate-950/90 p-1.5 rounded-xl border border-slate-800 shrink-0">
             <button
               onClick={() => { setTypeFilter('all'); setCurrentPage(1); }}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition ${
+              className={`px-3 py-2 text-xs font-bold rounded-lg transition active:scale-95 cursor-pointer ${
                 typeFilter === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -259,7 +266,7 @@ export default function TransactionHistory() {
             </button>
             <button
               onClick={() => { setTypeFilter('expense'); setCurrentPage(1); }}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition ${
+              className={`px-3 py-2 text-xs font-bold rounded-lg transition active:scale-95 cursor-pointer ${
                 typeFilter === 'expense' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -267,7 +274,7 @@ export default function TransactionHistory() {
             </button>
             <button
               onClick={() => { setTypeFilter('income'); setCurrentPage(1); }}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition ${
+              className={`px-3 py-2 text-xs font-bold rounded-lg transition active:scale-95 cursor-pointer ${
                 typeFilter === 'income' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -276,136 +283,170 @@ export default function TransactionHistory() {
           </div>
 
           {/* Search Input */}
-          <div className="relative md:col-span-2">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               placeholder="Search description, category or notes..."
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 pl-9 pr-8 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+              className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 pl-10 pr-9 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
             />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Bar Controls */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`flex-1 lg:flex-none inline-flex items-center justify-center space-x-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition cursor-pointer active:scale-95 ${
+                showAdvancedFilters || [filterCategory, filterSubcategory, filterPaymentMethod, dateFrom, dateTo, minAmount, maxAmount].some(Boolean)
+                  ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40'
+                  : 'bg-slate-950/80 text-slate-300 border-slate-800 hover:bg-slate-900'
+              }`}
+            >
+              <Filter className="w-4 h-4 text-indigo-400" />
+              <span>Filters</span>
+              {[filterCategory, filterSubcategory, filterPaymentMethod, dateFrom, dateTo, minAmount, maxAmount].filter(Boolean).length > 0 && (
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">
+                  {[filterCategory, filterSubcategory, filterPaymentMethod, dateFrom, dateTo, minAmount, maxAmount].filter(Boolean).length}
+                </span>
+              )}
+              {showAdvancedFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {[filterCategory, filterSubcategory, filterPaymentMethod, dateFrom, dateTo, minAmount, maxAmount, searchQuery, typeFilter !== 'all' ? typeFilter : ''].some(Boolean) && (
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold rounded-xl transition active:scale-95 cursor-pointer"
+                title="Reset All Filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reset</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* ROW 2: CATEGORIES, SUBCATEGORIES, PAYMENT & SORT */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* CATEGORY FILTER */}
-          <div>
-            <select
-              value={filterCategory}
-              onChange={(e) => { setFilterCategory(e.target.value); setFilterSubcategory(''); setCurrentPage(1); }}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-            >
-              <option value="">All Categories</option>
-              {HIERARCHICAL_CATEGORIES.map((group, idx) => (
-                <option key={idx} value={group.parent}>{group.parent}</option>
-              ))}
-            </select>
-          </div>
+        {/* ROW 2: COLLAPSIBLE / SPACIOUS FILTER GRID */}
+        {(showAdvancedFilters || [filterCategory, filterSubcategory, filterPaymentMethod, dateFrom, dateTo, minAmount, maxAmount].some(Boolean)) && (
+          <div className="pt-3 border-t border-slate-800/80 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* CATEGORY FILTER */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Category</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => { setFilterCategory(e.target.value); setFilterSubcategory(''); setCurrentPage(1); }}
+                  className="w-full bg-slate-950/90 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition cursor-pointer min-h-[42px]"
+                >
+                  <option value="">All Categories</option>
+                  {HIERARCHICAL_CATEGORIES.map((group, idx) => (
+                    <option key={idx} value={group.parent}>{group.parent}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* SUBCATEGORY FILTER */}
-          <div>
-            <select
-              value={filterSubcategory}
-              onChange={(e) => { setFilterSubcategory(e.target.value); setCurrentPage(1); }}
-              disabled={!filterCategory || availableSubcategories.length === 0}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition disabled:opacity-40"
-            >
-              <option value="">All Subcategories</option>
-              {availableSubcategories.map((sub, idx) => (
-                <option key={idx} value={sub}>{sub}</option>
-              ))}
-            </select>
-          </div>
+              {/* SUBCATEGORY FILTER */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Subcategory</label>
+                <select
+                  value={filterSubcategory}
+                  onChange={(e) => { setFilterSubcategory(e.target.value); setCurrentPage(1); }}
+                  disabled={!filterCategory || availableSubcategories.length === 0}
+                  className="w-full bg-slate-950/90 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition disabled:opacity-40 cursor-pointer min-h-[42px]"
+                >
+                  <option value="">All Subcategories</option>
+                  {availableSubcategories.map((sub, idx) => (
+                    <option key={idx} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* PAYMENT METHOD FILTER */}
-          <div>
-            <select
-              value={filterPaymentMethod}
-              onChange={(e) => { setFilterPaymentMethod(e.target.value); setCurrentPage(1); }}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-            >
-              <option value="">All Payment Methods</option>
-              {paymentMethodsList.map((pm, idx) => (
-                <option key={idx} value={pm}>{pm}</option>
-              ))}
-            </select>
-          </div>
+              {/* PAYMENT METHOD FILTER */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</label>
+                <select
+                  value={filterPaymentMethod}
+                  onChange={(e) => { setFilterPaymentMethod(e.target.value); setCurrentPage(1); }}
+                  className="w-full bg-slate-950/90 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition cursor-pointer min-h-[42px]"
+                >
+                  <option value="">All Payment Methods</option>
+                  {paymentMethodsList.map((pm, idx) => (
+                    <option key={idx} value={pm}>{pm}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* SORTING SELECTOR */}
-          <div>
-            <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-            >
-              <option value="newest">Sort: Newest Date</option>
-              <option value="oldest">Sort: Oldest Date</option>
-              <option value="highest">Sort: Highest Amount</option>
-              <option value="lowest">Sort: Lowest Amount</option>
-            </select>
-          </div>
-        </div>
-
-        {/* ROW 3: DATE RANGE & AMOUNT RANGE */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-2 border-t border-slate-800/60">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Date Range */}
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-400 font-medium">Dates:</span>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-                className="bg-slate-950/70 border border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-white focus:outline-none"
-              />
-              <span className="text-xs text-slate-500">to</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => { setDateTo(e.target.value)} }
-                className="bg-slate-950/70 border border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-white focus:outline-none"
-              />
+              {/* SORTING SELECTOR */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Sort Order</label>
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="w-full bg-slate-950/90 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition cursor-pointer min-h-[42px]"
+                >
+                  <option value="newest">Newest Date First</option>
+                  <option value="oldest">Oldest Date First</option>
+                  <option value="highest">Highest Amount First</option>
+                  <option value="lowest">Lowest Amount First</option>
+                </select>
+              </div>
             </div>
 
-            {/* Amount Range */}
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-400 font-medium">Amount:</span>
-              <input
-                type="number"
-                placeholder="Min ₹"
-                value={minAmount}
-                onChange={(e) => { setMinAmount(e.target.value); setCurrentPage(1); }}
-                className="w-20 bg-slate-950/70 border border-slate-800 rounded-lg py-1.5 px-2 text-xs text-white placeholder-slate-500 focus:outline-none"
-              />
-              <span className="text-xs text-slate-500">-</span>
-              <input
-                type="number"
-                placeholder="Max ₹"
-                value={maxAmount}
-                onChange={(e) => { setMaxAmount(e.target.value); setCurrentPage(1); }}
-                className="w-20 bg-slate-950/70 border border-slate-800 rounded-lg py-1.5 px-2 text-xs text-white placeholder-slate-500 focus:outline-none"
-              />
+            {/* DATE & AMOUNT RANGES */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800/60">
+              {/* Date Range */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date Range</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+                    className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer min-h-[42px]"
+                  />
+                  <span className="text-xs text-slate-500 font-semibold">to</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+                    className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer min-h-[42px]"
+                  />
+                </div>
+              </div>
+
+              {/* Amount Range */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Amount Range (₹)</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    placeholder="Min ₹"
+                    value={minAmount}
+                    onChange={(e) => { setMinAmount(e.target.value); setCurrentPage(1); }}
+                    className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 min-h-[42px]"
+                  />
+                  <span className="text-xs text-slate-500 font-semibold">-</span>
+                  <input
+                    type="number"
+                    placeholder="Max ₹"
+                    value={maxAmount}
+                    onChange={(e) => { setMaxAmount(e.target.value); setCurrentPage(1); }}
+                    className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 min-h-[42px]"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={handleClearFilters}
-            className="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition self-end lg:self-auto"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>Reset All Filters</span>
-          </button>
-        </div>
+        )}
 
       </div>
 

@@ -40,25 +40,26 @@
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
 }
 
-/* Comprehensive iOS Safari & WebKit Date Input Overflow Fix */
-input[type="date"],
-input[type="month"],
+/* Comprehensive Input & Touch Target Utilities */
 input[type="text"],
 input[type="number"],
-select,
 textarea {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
+}
+
+select,
+input[type="date"],
+input[type="month"] {
+  cursor: pointer !important;
+  box-sizing: border-box;
 }
 
 /* Force iOS Safari Shadow DOM date value alignment and bounds */
 input[type="date"],
 input[type="month"] {
-  -webkit-appearance: none !important;
-  appearance: none !important;
-  display: block !important;
-  min-height: 48px;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 42px;
 }
 
 input[type="date"]::-webkit-date-and-time-value,
