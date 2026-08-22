@@ -14,6 +14,7 @@ import EditEarning from './pages/earnings/EditEarning';
 import EarningsHistory from './pages/earnings/EarningsHistory';
 import Analytics from './pages/Analytics';
 import Categories from './pages/Categories';
+import Subscriptions from './pages/Subscriptions';
 import Settings from './pages/Settings';
 import { Toaster } from 'react-hot-toast';
 
@@ -60,6 +61,9 @@ export default function App() {
 
             {/* Categories */}
             <Route path="/categories" element={<Categories />} />
+
+            {/* Subscriptions */}
+            <Route path="/subscriptions" element={<Subscriptions />} />
 
             {/* Settings */}
             <Route path="/settings" element={<Settings />} />

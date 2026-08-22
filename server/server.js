@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const earningRoutes = require('./routes/earningRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const { isSheetsConfigured } = require('./services/googleSheetsService');
 
 const app = express();
@@ -28,14 +29,14 @@ app.get('/', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     message: 'Personal Money Tracker API',
-    endpoints: ['/api/auth', '/api/transactions', '/api/earnings', '/api/settings', '/api/health']
+    endpoints: ['/api/auth', '/api/transactions', '/api/earnings', '/api/settings', '/api/subscriptions', '/api/health']
   });
 });
 
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
-    version: 'v1.0.2-parseAmount-fix',
+    version: 'v1.0.3-subscriptions',
     googleSheetsConfigured: isSheetsConfigured(),
     timestamp: new Date().toISOString()
   });
@@ -46,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/earnings', earningRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // 404 Handler
 app.use((req, res) => {

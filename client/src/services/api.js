@@ -50,4 +50,11 @@ export const deleteEarningApi = (id) => API.delete(`/earnings/${id}`);
 export const getSettingsApi = () => API.get('/settings');
 export const updateSettingsApi = (data) => API.put('/settings', data);
 
+// Subscriptions endpoints
+export const getSubscriptionsApi = () => API.get('/subscriptions');
+export const addSubscriptionApi = (data) => API.post('/subscriptions', data);
+export const updateSubscriptionApi = (id, data) => API.put(`/subscriptions/${id}`, data);
+export const deleteSubscriptionApi = (id) => API.delete(`/subscriptions/${id}`);
+export const paySubscriptionApi = (id) => API.post(`/subscriptions/${id}/pay`);
+
 export default API;

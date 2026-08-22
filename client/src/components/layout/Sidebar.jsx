@@ -7,6 +7,7 @@ import {
   ArrowUpCircle,
   BarChart3, 
   Grid, 
+  Repeat,
   Settings, 
   LogOut, 
   Menu, 
@@ -36,6 +37,7 @@ export default function Sidebar() {
     { to: '/earnings', label: 'Earnings', icon: ArrowUpCircle },
     { to: '/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/categories', label: 'Categories', icon: Grid },
+    { to: '/subscriptions', label: 'Subscriptions', icon: Repeat },
     { to: '/settings', label: 'Settings', icon: Settings },
   ];
 
