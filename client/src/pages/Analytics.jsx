@@ -125,6 +125,14 @@ export default function Analytics() {
     dailyMap[dStr].items.push({ ...e, recordType: 'income', category: e.source });
   });
 
+  // Current Selected Month Cashflow Stats
+  const selectedMonthStr = `${String(month + 1).padStart(2, '0')}-${year}`;
+  const currentMonthTxns = transactions.filter(t => t.date && t.date.slice(3) === selectedMonthStr);
+  const currentMonthEarn = earnings.filter(e => e.date && e.date.slice(3) === selectedMonthStr);
+  const monthTotalSpent = currentMonthTxns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  const monthTotalEarned = currentMonthEarn.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const monthNetFlow = monthTotalEarned - monthTotalSpent;
+
   // Daily Expense Timeline (Day-by-day trend & peak spikes)
   const dailyTimelineMap = {};
   transactions.forEach(t => {
@@ -271,60 +279,83 @@ export default function Analytics() {
       </div>
 
       {/* 2. INTERACTIVE FINANCIAL CALENDAR CASHFLOW VIEW */}
-      <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
-        {/* Calendar Header with Navigation */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-2xl space-y-6 border border-slate-800/80 relative overflow-hidden">
+        {/* Decorative Top Accent Glow */}
+        <div className="absolute -top-24 -right-24 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Calendar Header with Title, Month Summary Badges & Navigation */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 text-indigo-400 border border-indigo-500/30 shadow-inner">
               <CalendarDays className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight flex items-center space-x-2">
+              <h2 className="text-xl font-black text-white tracking-tight flex items-center space-x-2">
                 <span>{calendarMonthLabel}</span>
               </h2>
-              <p className="text-xs text-slate-400">Daily net cashflow breakdown & activity calendar</p>
+              <p className="text-xs text-slate-400 font-medium">Daily net cashflow breakdown & activity heatmap</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 self-end sm:self-auto">
-            <button
-              onClick={handlePrevMonth}
-              className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
-              title="Previous Month"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleToday}
-              className="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition cursor-pointer"
-            >
-              Today
-            </button>
-            <button
-              onClick={handleNextMonth}
-              className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
-              title="Next Month"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          {/* Monthly Executive Summary Pills */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center space-x-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+              <span>Earned: {formatAmount(monthTotalEarned)}</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold flex items-center space-x-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.9)]" />
+              <span>Spent: {formatAmount(monthTotalSpent)}</span>
+            </div>
+            <div className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm border ${
+              monthNetFlow >= 0 
+                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' 
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+            }`}>
+              <span>Net: {monthNetFlow >= 0 ? `+${formatAmount(monthNetFlow)}` : `-${formatAmount(Math.abs(monthNetFlow))}`}</span>
+            </div>
+
+            {/* Month Navigation Controls */}
+            <div className="flex items-center space-x-1.5 ml-auto lg:ml-2">
+              <button
+                onClick={handlePrevMonth}
+                className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer shadow-md"
+                title="Previous Month"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleToday}
+                className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition active:scale-95 cursor-pointer shadow-lg shadow-indigo-600/30"
+              >
+                Today
+              </button>
+              <button
+                onClick={handleNextMonth}
+                className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer shadow-md"
+                title="Next Month"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="py-1 bg-slate-950/60 rounded-lg border border-slate-800/40">{d}</div>
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs font-black text-slate-400 uppercase tracking-widest">
+          {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
+            <div key={d} className="py-2 bg-slate-950/80 rounded-xl border border-slate-800/60 shadow-inner">{d}</div>
           ))}
         </div>
 
         {/* Calendar Grid Days */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
           {/* Previous Month Padding Days */}
           {Array.from({ length: firstDayIndex }).map((_, idx) => {
             const prevDateNum = totalDaysInPrevMonth - firstDayIndex + idx + 1;
             return (
-              <div key={`prev-${idx}`} className="min-h-[64px] sm:min-h-[84px] p-1.5 sm:p-2 rounded-xl bg-slate-950/20 border border-slate-900 opacity-25 select-none">
-                <span className="text-xs text-slate-600 font-semibold">{prevDateNum}</span>
+              <div key={`prev-${idx}`} className="min-h-[68px] sm:min-h-[88px] p-2 rounded-2xl bg-slate-950/20 border border-slate-900/60 opacity-20 select-none">
+                <span className="text-xs text-slate-600 font-bold">{prevDateNum}</span>
               </div>
             );
           })}
@@ -344,36 +375,46 @@ export default function Analytics() {
               <div
                 key={`day-${dayNum}`}
                 onClick={() => setSelectedDayDate(isSelected ? null : formattedDayStr)}
-                className={`min-h-[64px] sm:min-h-[84px] p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between transition cursor-pointer relative group ${
+                className={`min-h-[68px] sm:min-h-[88px] p-2 rounded-2xl border flex flex-col justify-between transition-all duration-200 cursor-pointer relative group hover:scale-[1.03] ${
                   isSelected 
-                    ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-500' 
+                    ? 'bg-gradient-to-br from-indigo-950/90 via-slate-950 to-indigo-900/50 border-indigo-500 shadow-xl shadow-indigo-500/25 ring-2 ring-indigo-500' 
                     : dayData 
-                      ? 'bg-slate-950/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60' 
-                      : 'bg-slate-950/40 border-slate-900 hover:bg-slate-950/70'
+                      ? 'bg-slate-950/90 border-slate-800/90 hover:border-slate-700 hover:bg-slate-900/80 shadow-md' 
+                      : 'bg-slate-950/40 border-slate-900/80 hover:bg-slate-950/80'
                 }`}
               >
-                {/* Top Row: Date Number & Activity Dots */}
+                {/* Top Row: Date Number & Glowing Dots */}
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs sm:text-sm font-black ${isSelected ? 'text-indigo-400' : 'text-slate-200'}`}>
+                  <span className={`text-xs sm:text-sm font-black tracking-tight ${isSelected ? 'text-indigo-400' : 'text-slate-100'}`}>
                     {dayNum}
                   </span>
 
-                  {/* Status Indicator Dots */}
+                  {/* Status Indicator Dots with Glow */}
                   <div className="flex items-center space-x-1">
-                    {hasIncome && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-500/50" title="Income recorded" />}
-                    {hasExpense && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-sm shadow-rose-500/50" title="Expense recorded" />}
+                    {hasIncome && (
+                      <span 
+                        className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" 
+                        title={`Income: +${formatAmount(dayData.income)}`} 
+                      />
+                    )}
+                    {hasExpense && (
+                      <span 
+                        className="w-2 h-2 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.9)]" 
+                        title={`Spent: -${formatAmount(dayData.expenses)}`} 
+                      />
+                    )}
                   </div>
                 </div>
 
-                {/* Bottom Row: Net Daily Amount Badge */}
+                {/* Bottom Row: Daily Amount Pill Badge */}
                 {dayData && (dayData.income > 0 || dayData.expenses > 0) && (
                   <div className="mt-1 text-right">
-                    <span className={`text-[10px] sm:text-xs font-extrabold tracking-tight block ${
+                    <span className={`text-[10px] sm:text-xs font-black tracking-tight inline-block px-1.5 py-0.5 rounded-lg border shadow-sm ${
                       netAmount < 0 
-                        ? 'text-rose-400' 
+                        ? 'bg-rose-500/15 border-rose-500/30 text-rose-300' 
                         : netAmount > 0 
-                          ? 'text-emerald-400' 
-                          : 'text-slate-300'
+                          ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' 
+                          : 'bg-slate-800 border-slate-700 text-slate-300'
                     }`}>
                       {netAmount < 0 
                         ? `-₹${Math.abs(netAmount)}` 
@@ -390,38 +431,56 @@ export default function Analytics() {
 
         {/* Selected Day Transaction Details Inspector Drawer */}
         {selectedDayDate && (
-          <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-indigo-500/40 space-y-3 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-indigo-400" />
-                <span>Transactions on {selectedDayDate}</span>
-              </h3>
+          <div className="mt-5 p-5 rounded-2xl bg-slate-950/95 border border-indigo-500/50 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 relative">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-extrabold text-white">Activity Inspector for {selectedDayDate}</h3>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+                  {dailyMap[selectedDayDate]?.items.length || 0} Records
+                </span>
+              </div>
               <button
                 onClick={() => setSelectedDayDate(null)}
-                className="text-xs text-slate-400 hover:text-white p-1 cursor-pointer"
+                className="text-xs font-bold text-slate-400 hover:text-white px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
               >
                 ✕ Close
               </button>
             </div>
 
             {!dailyMap[selectedDayDate] || dailyMap[selectedDayDate].items.length === 0 ? (
-              <p className="text-xs text-slate-400 py-2">No transactions logged on {selectedDayDate}.</p>
+              <p className="text-xs text-slate-400 py-3 text-center">No transactions logged on {selectedDayDate}.</p>
             ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
                 {dailyMap[selectedDayDate].items.map((item, idx) => {
                   const isExp = item.recordType === 'expense';
                   return (
-                    <div key={idx} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2.5">
-                        <div className={`p-1.5 rounded-md ${isExp ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
-                          {isExp ? <ArrowDownCircle className="w-3.5 h-3.5" /> : <ArrowUpCircle className="w-3.5 h-3.5" />}
+                    <div 
+                      key={idx} 
+                      className={`p-3 rounded-xl bg-slate-900/90 border flex items-center justify-between text-xs shadow-md ${
+                        isExp ? 'border-rose-500/20 border-l-4 border-l-rose-500' : 'border-emerald-500/20 border-l-4 border-l-emerald-500'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-xl ${isExp ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                          {isExp ? <ArrowDownCircle className="w-4 h-4" /> : <ArrowUpCircle className="w-4 h-4" />}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-200">{item.description}</p>
-                          <span className="text-[10px] text-slate-400">{item.category} • {item.paymentMethod || 'UPI'}</span>
+                          <p className="font-bold text-slate-100 text-sm">{item.description}</p>
+                          <div className="flex items-center space-x-2 mt-0.5">
+                            <span className="text-[11px] text-slate-400 font-medium">{item.category}</span>
+                            <span className="text-slate-600">•</span>
+                            <span className="text-[11px] text-slate-400 font-medium">{item.paymentMethod || 'UPI'}</span>
+                            {item.notes && (
+                              <>
+                                <span className="text-slate-600">•</span>
+                                <span className="text-[11px] text-slate-500 italic truncate max-w-[150px]">{item.notes}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <p className={`font-bold text-sm ${isExp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      <p className={`font-black text-base tracking-tight ${isExp ? 'text-rose-400' : 'text-emerald-400'}`}>
                         {isExp ? `- ${formatAmount(item.amount)}` : `+ ${formatAmount(item.amount)}`}
                       </p>
                     </div>
