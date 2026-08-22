@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addEarningApi, getSettingsApi } from '../../services/api';
 import { getTodayISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { ArrowLeft, Save, Calendar, Sparkles, AlignLeft, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, Sparkles, AlignLeft, IndianRupee, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AddEarning() {
@@ -92,6 +92,26 @@ export default function AddEarning() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Add Earning</h1>
           <p className="text-xs sm:text-sm text-slate-400">Record money received (Pocket money, freelancing, gifts, etc.)</p>
         </div>
+      </div>
+
+      {/* Type Switcher Tabs */}
+      <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+        <button
+          type="button"
+          onClick={() => navigate('/transactions/add')}
+          className="flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 flex items-center justify-center space-x-2 transition"
+        >
+          <ArrowDownCircle className="w-4 h-4 text-rose-400" />
+          <span>Expense (Money Out)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/earnings/add')}
+          className="flex-1 py-3 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 transition"
+        >
+          <ArrowUpCircle className="w-4 h-4" />
+          <span>Income / Earning (Money In)</span>
+        </button>
       </div>
 
       {/* Form Card */}

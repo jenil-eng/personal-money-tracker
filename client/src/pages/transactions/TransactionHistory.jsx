@@ -212,7 +212,7 @@ export default function TransactionHistory() {
           <p className="text-sm text-slate-400">All recorded transactions and earnings with advanced filters</p>
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
+        <div className="flex items-center space-x-2 self-start sm:self-auto flex-wrap gap-y-2">
           <button
             onClick={() => setGroupByMonth(!groupByMonth)}
             className={`inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition ${
@@ -227,10 +227,18 @@ export default function TransactionHistory() {
 
           <Link
             to="/transactions/add"
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>+ Add</span>
+            <span>+ Add Expense</span>
+          </Link>
+
+          <Link
+            to="/earnings/add"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition active:scale-95"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>+ Add Earning</span>
           </Link>
         </div>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addTransactionApi, getSettingsApi } from '../../services/api';
 import { getTodayISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AddTransaction() {
@@ -102,9 +102,29 @@ export default function AddTransaction() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Add Transaction</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Add Expense</h1>
           <p className="text-xs sm:text-sm text-slate-400">Record a new expense into Google Sheets</p>
         </div>
+      </div>
+
+      {/* Type Switcher Tabs */}
+      <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+        <button
+          type="button"
+          onClick={() => navigate('/transactions/add')}
+          className="flex-1 py-3 text-xs sm:text-sm font-bold rounded-xl bg-rose-600 text-white shadow-lg shadow-rose-600/30 flex items-center justify-center space-x-2 transition"
+        >
+          <ArrowDownCircle className="w-4 h-4" />
+          <span>Expense (Money Out)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/earnings/add')}
+          className="flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 flex items-center justify-center space-x-2 transition"
+        >
+          <ArrowUpCircle className="w-4 h-4 text-emerald-400" />
+          <span>Income / Earning (Money In)</span>
+        </button>
       </div>
 
       {/* Form Card */}

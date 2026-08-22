@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Home, 
   ArrowDownCircle, 
+  ArrowUpCircle,
   BarChart3, 
   Grid, 
   Settings, 
@@ -32,6 +33,7 @@ export default function Sidebar() {
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: Home },
     { to: '/transactions/history', label: 'Transactions', icon: ArrowDownCircle },
+    { to: '/earnings', label: 'Earnings', icon: ArrowUpCircle },
     { to: '/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/categories', label: 'Categories', icon: Grid },
     { to: '/settings', label: 'Settings', icon: Settings },
@@ -114,15 +116,25 @@ export default function Sidebar() {
             </button>
           </div>
 
-          {/* Quick Action Button */}
-          <div className="p-4 border-b border-slate-800/60">
+          {/* Quick Action Buttons */}
+          <div className="p-4 border-b border-slate-800/60 grid grid-cols-2 gap-2">
             <NavLink
               to="/transactions/add"
               onClick={closeMobile}
-              className="w-full inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95"
+              className="inline-flex items-center justify-center space-x-1 px-2 py-2.5 bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-600/20 transition active:scale-95 text-center truncate"
+              title="Add Expense"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Add Transaction</span>
+              <PlusCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>+ Expense</span>
+            </NavLink>
+            <NavLink
+              to="/earnings/add"
+              onClick={closeMobile}
+              className="inline-flex items-center justify-center space-x-1 px-2 py-2.5 bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition active:scale-95 text-center truncate"
+              title="Add Earning"
+            >
+              <PlusCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>+ Earning</span>
             </NavLink>
           </div>
 

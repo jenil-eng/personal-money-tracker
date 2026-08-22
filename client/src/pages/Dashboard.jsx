@@ -154,7 +154,7 @@ export default function Dashboard() {
           <p className="text-xs sm:text-sm text-slate-400">Overview & Financial Health Analytics</p>
         </div>
 
-        <div className="flex items-center space-x-2.5 self-start sm:self-auto">
+        <div className="flex items-center space-x-2.5 self-start sm:self-auto flex-wrap gap-y-2">
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
@@ -165,10 +165,17 @@ export default function Dashboard() {
           </button>
           <Link
             to="/transactions/add"
-            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>+ Add</span>
+            <span>+ Add Expense</span>
+          </Link>
+          <Link
+            to="/earnings/add"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition active:scale-95"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>+ Add Earning</span>
           </Link>
         </div>
       </div>
@@ -190,31 +197,45 @@ export default function Dashboard() {
         </div>
 
         {/* Total Income */}
-        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-emerald-500">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Income</span>
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <ArrowUpCircle className="w-5 h-5" />
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-emerald-500 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Income</span>
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ArrowUpCircle className="w-5 h-5" />
+              </div>
             </div>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-3 tracking-tight">
+              {formatAmount(totalIncome)}
+            </p>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-3 tracking-tight">
-            {formatAmount(totalIncome)}
-          </p>
-          <p className="text-xs text-slate-400 mt-1">{earnings.length} total income records</p>
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/60">
+            <span className="text-xs text-slate-400">{earnings.length} records</span>
+            <Link to="/earnings" className="text-xs font-semibold text-emerald-400 hover:underline flex items-center space-x-1">
+              <span>View Earnings →</span>
+            </Link>
+          </div>
         </div>
 
         {/* Total Expenses */}
-        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-rose-500">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</span>
-            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-              <ArrowDownCircle className="w-5 h-5" />
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-rose-500 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</span>
+              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <ArrowDownCircle className="w-5 h-5" />
+              </div>
             </div>
+            <p className="text-2xl sm:text-3xl font-black text-rose-400 mt-3 tracking-tight">
+              {formatAmount(totalExpenses)}
+            </p>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-rose-400 mt-3 tracking-tight">
-            {formatAmount(totalExpenses)}
-          </p>
-          <p className="text-xs text-slate-400 mt-1">{transactions.length} total expense records</p>
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/60">
+            <span className="text-xs text-slate-400">{transactions.length} records</span>
+            <Link to="/transactions/history" className="text-xs font-semibold text-rose-400 hover:underline flex items-center space-x-1">
+              <span>View Expenses →</span>
+            </Link>
+          </div>
         </div>
       </div>
 

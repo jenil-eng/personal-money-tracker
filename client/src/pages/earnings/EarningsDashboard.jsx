@@ -110,7 +110,7 @@ export default function EarningsDashboard() {
           <p className="text-xs sm:text-sm text-slate-400">Overview of money received (Student Earnings)</p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5 flex-wrap gap-y-2">
           <Link
             to="/earnings/history"
             className="inline-flex items-center space-x-2 px-3.5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-semibold text-slate-300 transition"
@@ -124,6 +124,13 @@ export default function EarningsDashboard() {
           >
             <PlusCircle className="w-4 h-4" />
             <span>+ Add Earning</span>
+          </Link>
+          <Link
+            to="/transactions/add"
+            className="inline-flex items-center space-x-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-rose-600/25"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>+ Add Expense</span>
           </Link>
         </div>
       </div>
