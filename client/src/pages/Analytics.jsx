@@ -15,7 +15,12 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   Zap,
-  CreditCard
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
+  ArrowDownCircle,
+  ArrowUpCircle
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -38,6 +43,10 @@ export default function Analytics() {
   const [transactions, setTransactions] = useState([]);
   const [earnings, setEarnings] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Calendar View State
+  const [calendarDate, setCalendarDate] = useState(() => new Date());
+  const [selectedDayDate, setSelectedDayDate] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +85,45 @@ export default function Analytics() {
   // Net Cash Flow Calculation
   const netCashFlow = totalIncome - totalExpenses;
   const isPositiveCashFlow = netCashFlow >= 0;
+
+  // Calendar Math & Data Mapping
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalDaysInPrevMonth = new Date(year, month, 0).getDate();
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const calendarMonthLabel = `${monthNames[month]} ${year}`;
+
+  const handlePrevMonth = () => {
+    setCalendarDate(new Date(year, month - 1, 1));
+    setSelectedDayDate(null);
+  };
+
+  const handleNextMonth = () => {
+    setCalendarDate(new Date(year, month + 1, 1));
+    setSelectedDayDate(null);
+  };
+
+  const handleToday = () => {
+    setCalendarDate(new Date());
+    setSelectedDayDate(null);
+  };
+
+  const dailyMap = {};
+  transactions.forEach(t => {
+    const dStr = t.date;
+    if (!dailyMap[dStr]) dailyMap[dStr] = { expenses: 0, income: 0, items: [] };
+    dailyMap[dStr].expenses += Number(t.amount) || 0;
+    dailyMap[dStr].items.push({ ...t, recordType: 'expense' });
+  });
+
+  earnings.forEach(e => {
+    const dStr = e.date;
+    if (!dailyMap[dStr]) dailyMap[dStr] = { expenses: 0, income: 0, items: [] };
+    dailyMap[dStr].income += Number(e.amount) || 0;
+    dailyMap[dStr].items.push({ ...e, recordType: 'income', category: e.source });
+  });
 
   // Daily Expense Timeline (Day-by-day trend & peak spikes)
   const dailyTimelineMap = {};
@@ -222,7 +270,170 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* 2. DAILY EXPENSE TIMELINE (Replaced Artificial Scale Monthly Trend) */}
+      {/* 2. INTERACTIVE FINANCIAL CALENDAR CASHFLOW VIEW */}
+      <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
+        {/* Calendar Header with Navigation */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <CalendarDays className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-white tracking-tight flex items-center space-x-2">
+                <span>{calendarMonthLabel}</span>
+              </h2>
+              <p className="text-xs text-slate-400">Daily net cashflow breakdown & activity calendar</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 self-end sm:self-auto">
+            <button
+              onClick={handlePrevMonth}
+              className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+              title="Previous Month"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleToday}
+              className="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition cursor-pointer"
+            >
+              Today
+            </button>
+            <button
+              onClick={handleNextMonth}
+              className="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+              title="Next Month"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+            <div key={d} className="py-1 bg-slate-950/60 rounded-lg border border-slate-800/40">{d}</div>
+          ))}
+        </div>
+
+        {/* Calendar Grid Days */}
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          {/* Previous Month Padding Days */}
+          {Array.from({ length: firstDayIndex }).map((_, idx) => {
+            const prevDateNum = totalDaysInPrevMonth - firstDayIndex + idx + 1;
+            return (
+              <div key={`prev-${idx}`} className="min-h-[64px] sm:min-h-[84px] p-1.5 sm:p-2 rounded-xl bg-slate-950/20 border border-slate-900 opacity-25 select-none">
+                <span className="text-xs text-slate-600 font-semibold">{prevDateNum}</span>
+              </div>
+            );
+          })}
+
+          {/* Current Month Days */}
+          {Array.from({ length: totalDaysInMonth }).map((_, idx) => {
+            const dayNum = idx + 1;
+            const formattedDayStr = `${String(dayNum).padStart(2, '0')}-${String(month + 1).padStart(2, '0')}-${year}`;
+            const dayData = dailyMap[formattedDayStr];
+            
+            const hasIncome = dayData && dayData.income > 0;
+            const hasExpense = dayData && dayData.expenses > 0;
+            const netAmount = dayData ? (dayData.income - dayData.expenses) : 0;
+            const isSelected = selectedDayDate === formattedDayStr;
+
+            return (
+              <div
+                key={`day-${dayNum}`}
+                onClick={() => setSelectedDayDate(isSelected ? null : formattedDayStr)}
+                className={`min-h-[64px] sm:min-h-[84px] p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between transition cursor-pointer relative group ${
+                  isSelected 
+                    ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-500' 
+                    : dayData 
+                      ? 'bg-slate-950/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60' 
+                      : 'bg-slate-950/40 border-slate-900 hover:bg-slate-950/70'
+                }`}
+              >
+                {/* Top Row: Date Number & Activity Dots */}
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs sm:text-sm font-black ${isSelected ? 'text-indigo-400' : 'text-slate-200'}`}>
+                    {dayNum}
+                  </span>
+
+                  {/* Status Indicator Dots */}
+                  <div className="flex items-center space-x-1">
+                    {hasIncome && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-500/50" title="Income recorded" />}
+                    {hasExpense && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-sm shadow-rose-500/50" title="Expense recorded" />}
+                  </div>
+                </div>
+
+                {/* Bottom Row: Net Daily Amount Badge */}
+                {dayData && (dayData.income > 0 || dayData.expenses > 0) && (
+                  <div className="mt-1 text-right">
+                    <span className={`text-[10px] sm:text-xs font-extrabold tracking-tight block ${
+                      netAmount < 0 
+                        ? 'text-rose-400' 
+                        : netAmount > 0 
+                          ? 'text-emerald-400' 
+                          : 'text-slate-300'
+                    }`}>
+                      {netAmount < 0 
+                        ? `-₹${Math.abs(netAmount)}` 
+                        : netAmount > 0 
+                          ? `+₹${netAmount}` 
+                          : '₹0'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Selected Day Transaction Details Inspector Drawer */}
+        {selectedDayDate && (
+          <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-indigo-500/40 space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-indigo-400" />
+                <span>Transactions on {selectedDayDate}</span>
+              </h3>
+              <button
+                onClick={() => setSelectedDayDate(null)}
+                className="text-xs text-slate-400 hover:text-white p-1 cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {!dailyMap[selectedDayDate] || dailyMap[selectedDayDate].items.length === 0 ? (
+              <p className="text-xs text-slate-400 py-2">No transactions logged on {selectedDayDate}.</p>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {dailyMap[selectedDayDate].items.map((item, idx) => {
+                  const isExp = item.recordType === 'expense';
+                  return (
+                    <div key={idx} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-2.5">
+                        <div className={`p-1.5 rounded-md ${isExp ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                          {isExp ? <ArrowDownCircle className="w-3.5 h-3.5" /> : <ArrowUpCircle className="w-3.5 h-3.5" />}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-200">{item.description}</p>
+                          <span className="text-[10px] text-slate-400">{item.category} • {item.paymentMethod || 'UPI'}</span>
+                        </div>
+                      </div>
+                      <p className={`font-bold text-sm ${isExp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {isExp ? `- ${formatAmount(item.amount)}` : `+ ${formatAmount(item.amount)}`}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 3. DAILY EXPENSE TIMELINE */}
       <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
