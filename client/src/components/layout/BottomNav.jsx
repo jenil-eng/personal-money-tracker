@@ -24,18 +24,18 @@ export default function BottomNav() {
       {/* Quick Add Popover Modal / Overlay */}
       {showAddMenu && (
         <div 
-          className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col justify-end p-4 animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex flex-col justify-end p-4 animate-in fade-in duration-200"
           onClick={() => setShowAddMenu(false)}
         >
           <div 
-            className="bg-[#0b1329] border border-cyan-500/30 rounded-3xl p-5 space-y-4 shadow-2xl mb-16 glow-cyan"
+            className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-3 shadow-2xl mb-16"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <span className="text-xs font-black text-cyan-400 uppercase tracking-widest">Quick Cyber Action</span>
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Quick Action</span>
               <button 
                 onClick={() => setShowAddMenu(false)}
-                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -44,22 +44,22 @@ export default function BottomNav() {
             <div className="grid grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => handleSelectAdd('/transactions/add')}
-                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 active:scale-95 transition space-y-2 glow-expense"
+                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 active:scale-95 transition space-y-2"
               >
-                <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400">
+                <div className="p-3 rounded-full bg-rose-500/20 text-rose-400">
                   <ArrowDownCircle className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-black text-white">+ Add Expense</span>
+                <span className="text-xs font-bold text-white">+ Add Expense</span>
               </button>
 
               <button
                 onClick={() => handleSelectAdd('/earnings/add')}
-                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition space-y-2 glow-income"
+                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition space-y-2"
               >
-                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400">
+                <div className="p-3 rounded-full bg-emerald-500/20 text-emerald-400">
                   <ArrowUpCircle className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-black text-white">+ Add Earning</span>
+                <span className="text-xs font-bold text-white">+ Add Earning</span>
               </button>
             </div>
           </div>
@@ -69,14 +69,14 @@ export default function BottomNav() {
       {/* Main Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#060b18]/95 backdrop-blur-2xl border-t border-slate-800/80 px-2 py-2 flex items-center justify-around shadow-2xl pb-safe"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-2 flex items-center justify-around shadow-2xl pb-safe"
       >
         {/* Dashboard */}
         <NavLink
           to="/dashboard"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-cyan-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+              isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
         >
@@ -88,8 +88,8 @@ export default function BottomNav() {
         <NavLink
           to="/transactions/history"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-rose-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+              isActive ? 'text-rose-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
         >
@@ -102,22 +102,22 @@ export default function BottomNav() {
           onClick={() => setShowAddMenu(!showAddMenu)}
           className="flex flex-col items-center justify-center -mt-6 focus:outline-none"
         >
-          <div className={`p-3.5 rounded-full shadow-xl border-2 border-[#060b18] transition-all duration-300 ${
+          <div className={`p-3 rounded-full shadow-lg border-2 border-slate-900 transition ${
             showAddMenu 
-              ? 'bg-rose-600 text-white rotate-45 scale-110 shadow-rose-600/50' 
-              : 'bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 text-white shadow-cyan-500/40 hover:scale-110 active:scale-95 glow-cyan'
+              ? 'bg-rose-600 text-white rotate-45 scale-105' 
+              : 'bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-indigo-600/40 hover:scale-105 active:scale-95'
           }`}>
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </div>
-          <span className="text-[10px] text-cyan-300 font-extrabold mt-0.5">Add</span>
+          <span className="text-[10px] text-indigo-300 font-semibold mt-0.5">Add</span>
         </button>
 
         {/* Earnings */}
         <NavLink
           to="/earnings"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-emerald-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+              isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
         >
@@ -129,8 +129,8 @@ export default function BottomNav() {
         <NavLink
           to="/analytics"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-cyan-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+              isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
         >
