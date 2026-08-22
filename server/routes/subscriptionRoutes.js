@@ -79,12 +79,10 @@ async function readSubscriptions() {
     });
 
     const rows = response.data.values || [];
-    if (rows.length === 0) {
-      const store = mockStore.readStore();
-      return store.subscriptions || DEFAULT_SUBSCRIPTIONS;
-    }
+    // Filter out completely blank rows
+    const validRows = rows.filter(row => row && row.some(cell => String(cell).trim() !== ''));
 
-    return rows.map((row, index) => ({
+    return validRows.map((row, index) => ({
       id: index + 2,
       rowNumber: index + 2,
       name: row[0] || '',
@@ -99,7 +97,7 @@ async function readSubscriptions() {
   } catch (error) {
     console.warn('Google Sheets SUBSCRIPTIONS read error, using store fallback:', error.message);
     const store = mockStore.readStore();
-    return store.subscriptions || DEFAULT_SUBSCRIPTIONS;
+    return store.subscriptions || [];
   }
 }
 
@@ -110,10 +108,10 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
   try {
     const subs = await readSubscriptions();
-    res.json(Array.isArray(subs) && subs.length > 0 ? subs : DEFAULT_SUBSCRIPTIONS);
+    res.json(subs || []);
   } catch (err) {
     console.error('Subscription GET error:', err);
-    res.json(DEFAULT_SUBSCRIPTIONS);
+    res.json([]);
   }
 });
 
