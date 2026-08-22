@@ -154,29 +154,31 @@ export default function Dashboard() {
           <p className="text-xs sm:text-sm text-slate-400">Overview & Financial Health Analytics</p>
         </div>
 
-        <div className="flex items-center space-x-2.5 self-start sm:self-auto flex-wrap gap-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2.5 sm:space-y-0 sm:space-x-2.5 w-full sm:w-auto">
+          <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+            <Link
+              to="/transactions/add"
+              className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition active:scale-95 text-center"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">+ Add Expense</span>
+            </Link>
+            <Link
+              to="/earnings/add"
+              className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition active:scale-95 text-center"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">+ Add Earning</span>
+            </Link>
+          </div>
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="inline-flex items-center space-x-2 px-3.5 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-50 shadow-md"
+            className="inline-flex items-center justify-center space-x-2 px-3.5 py-2.5 bg-slate-900/90 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-50 shadow-md w-full sm:w-auto"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
-          <Link
-            to="/transactions/add"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition active:scale-95"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>+ Add Expense</span>
-          </Link>
-          <Link
-            to="/earnings/add"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition active:scale-95"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>+ Add Earning</span>
-          </Link>
         </div>
       </div>
 

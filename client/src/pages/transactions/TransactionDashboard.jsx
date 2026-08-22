@@ -110,27 +110,29 @@ export default function TransactionDashboard() {
           <p className="text-xs sm:text-sm text-slate-400">Overview of money spent</p>
         </div>
 
-        <div className="flex items-center space-x-2.5 flex-wrap gap-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2.5 sm:space-y-0 sm:space-x-2.5 w-full sm:w-auto">
+          <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+            <Link
+              to="/transactions/add"
+              className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition active:scale-95 text-center"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">+ Add Expense</span>
+            </Link>
+            <Link
+              to="/earnings/add"
+              className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition active:scale-95 text-center"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">+ Add Earning</span>
+            </Link>
+          </div>
           <Link
             to="/transactions/history"
-            className="inline-flex items-center space-x-2 px-3.5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-semibold text-slate-300 transition"
+            className="inline-flex items-center justify-center space-x-2 px-3.5 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs font-semibold text-slate-300 transition w-full sm:w-auto"
           >
             <History className="w-4 h-4" />
             <span>History</span>
-          </Link>
-          <Link
-            to="/transactions/add"
-            className="inline-flex items-center space-x-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-rose-600/25"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>+ Add Expense</span>
-          </Link>
-          <Link
-            to="/earnings/add"
-            className="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-emerald-600/25"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>+ Add Earning</span>
           </Link>
         </div>
       </div>
