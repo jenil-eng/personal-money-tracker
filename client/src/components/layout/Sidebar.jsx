@@ -51,7 +51,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="font-bold text-white text-base leading-none">Money Tracker</h1>
-            <span className="text-[11px] text-indigo-400 font-medium">Fintech Personal Finance</span>
+            <span className="text-[11px] text-indigo-400 font-medium">My Personal Expenses</span>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export default function Sidebar() {
               </div>
               <div>
                 <h2 className="font-bold text-white text-lg tracking-tight">Money Tracker</h2>
-                <p className="text-xs text-indigo-400 font-medium">Fintech Personal Finance</p>
+                <p className="text-xs text-indigo-400 font-medium">My Personal Expenses</p>
               </div>
             </div>
 
