@@ -23,7 +23,7 @@ async function readTransactions() {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'TRANSACTIONS!A2:F',
+      range: 'TRANSACTIONS!A2:G',
       valueRenderOption: 'FORMATTED_VALUE'
     });
 
@@ -36,7 +36,8 @@ async function readTransactions() {
       category: row[2] || '',
       amount: parseAmount(row[3]),
       paymentMethod: row[4] || '',
-      notes: row[5] || ''
+      notes: row[5] || '',
+      subcategory: row[6] || ''
     }));
   } catch (error) {
     console.warn('Google Sheets API unavailable, using local store fallback:', error.message);
@@ -46,7 +47,7 @@ async function readTransactions() {
 }
 
 async function addTransaction(data) {
-  const { date, description, category, amount, paymentMethod, notes = '' } = data;
+  const { date, description, category, subcategory = '', amount, paymentMethod, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
   const formattedDate = formatDate(date);
@@ -54,28 +55,30 @@ async function addTransaction(data) {
 
   const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
   const finalPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod.trim() : '-';
+  const finalSubcategory = subcategory && subcategory.trim() !== '' ? subcategory.trim() : '';
 
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
       const appendResponse = await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: 'TRANSACTIONS!A:F',
+        range: 'TRANSACTIONS!A:G',
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes]]
+          values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes, finalSubcategory]]
         }
       });
 
       const updatedRange = appendResponse.data.updates?.updatedRange || '';
-      const match = updatedRange.match(/TRANSACTIONS!A(\d+):F\1/);
+      const match = updatedRange.match(/TRANSACTIONS!A(\d+):G\1/);
       const rowNumber = match ? parseInt(match[1], 10) : undefined;
 
       return {
         date: formattedDate,
         description,
         category,
+        subcategory: finalSubcategory,
         amount: numericAmount,
         paymentMethod,
         notes,
@@ -97,6 +100,7 @@ async function addTransaction(data) {
     date: formattedDate,
     description,
     category,
+    subcategory: finalSubcategory,
     amount: numericAmount,
     paymentMethod,
     notes
@@ -122,7 +126,7 @@ function findRecord(list, targetId) {
 }
 
 async function updateTransaction(id, data) {
-  const { date, description, category, amount, paymentMethod, notes = '' } = data;
+  const { date, description, category, subcategory = '', amount, paymentMethod, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
   const formattedDate = formatDate(date);
@@ -131,6 +135,7 @@ async function updateTransaction(id, data) {
 
   const finalNotes = notes && notes.trim() !== '' ? notes.trim() : '-';
   const finalPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod.trim() : '-';
+  const finalSubcategory = subcategory && subcategory.trim() !== '' ? subcategory.trim() : '';
 
   if (client) {
     const { sheets, spreadsheetId } = client;
@@ -142,10 +147,10 @@ async function updateTransaction(id, data) {
         const rowNum = target.rowNumber;
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `TRANSACTIONS!A${rowNum}:F${rowNum}`,
+          range: `TRANSACTIONS!A${rowNum}:G${rowNum}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes]]
+            values: [["'" + formattedDate, description, category, numericAmount, finalPaymentMethod, finalNotes, finalSubcategory]]
           }
         });
 
@@ -155,6 +160,7 @@ async function updateTransaction(id, data) {
           date: formattedDate,
           description,
           category,
+          subcategory: finalSubcategory,
           amount: numericAmount,
           paymentMethod,
           notes
@@ -177,6 +183,7 @@ async function updateTransaction(id, data) {
     date: formattedDate,
     description,
     category,
+    subcategory: finalSubcategory,
     amount: numericAmount,
     paymentMethod,
     notes

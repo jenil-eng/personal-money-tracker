@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTransactionsApi, updateTransactionApi, getSettingsApi } from '../../services/api';
 import { ddmmYYYYtoISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee } from 'lucide-react';
+import { HIERARCHICAL_CATEGORIES } from '../../utils/categoryUtils';
+import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function EditTransaction() {
@@ -12,6 +13,7 @@ export default function EditTransaction() {
   const [dateIso, setDateIso] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
@@ -21,6 +23,15 @@ export default function EditTransaction() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Compute available subcategories based on active Category
+  const availableSubcategories = useMemo(() => {
+    if (!category) return [];
+    const group = HIERARCHICAL_CATEGORIES.find(
+      c => c.parent.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(c.parent.toLowerCase())
+    );
+    return group ? group.subcategories : [];
+  }, [category]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,6 +59,7 @@ export default function EditTransaction() {
         setDateIso(ddmmYYYYtoISO(item.date));
         setDescription(item.description || '');
         setCategory(item.category || '');
+        setSubcategory(item.subcategory || '');
         setAmount(item.amount || '');
         setPaymentMethod(item.paymentMethod || '');
         setNotes(item.notes || '');
@@ -82,6 +94,7 @@ export default function EditTransaction() {
         date: formattedDate,
         description: description.trim(),
         category,
+        subcategory,
         amount: numAmount,
         paymentMethod,
         notes: notes.trim()
@@ -160,7 +173,10 @@ export default function EditTransaction() {
             </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setSubcategory('');
+              }}
               className="w-full bg-slate-950/70 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 px-4 text-sm text-white focus:outline-none transition"
             >
               {categoriesList.map((cat, idx) => (
@@ -168,6 +184,26 @@ export default function EditTransaction() {
               ))}
             </select>
           </div>
+
+          {/* FIELD 3.5: SUBCATEGORY */}
+          {availableSubcategories.length > 0 && (
+            <div className="p-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl space-y-2">
+              <label className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider flex items-center space-x-2">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                <span>3.1 Subcategory (Optional Tag)</span>
+              </label>
+              <select
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+                className="w-full bg-slate-900 border border-indigo-500/30 focus:border-indigo-500 rounded-xl py-2.5 px-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+              >
+                <option value="">-- Select Subcategory (Optional) --</option>
+                {availableSubcategories.map((sub, idx) => (
+                  <option key={idx} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* FIELD 4: AMOUNT */}
           <div>

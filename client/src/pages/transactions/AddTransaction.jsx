@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addTransactionApi, getSettingsApi } from '../../services/api';
 import { getTodayISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { HIERARCHICAL_CATEGORIES } from '../../utils/categoryUtils';
+import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, ArrowDownCircle, ArrowUpCircle, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AddTransaction() {
@@ -12,19 +13,34 @@ export default function AddTransaction() {
   const [dateIso, setDateIso] = useState(getTodayISO());
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
 
   // Lists state
   const [categoriesList, setCategoriesList] = useState([
-    'Food', 'Travel', 'Shopping', 'Entertainment', 'Education', 'Bills', 'Personal', 'Other'
+    'Food & Dining', 'Transport', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Personal & Health', 'Other'
   ]);
   const [paymentMethodsList, setPaymentMethodsList] = useState([
     'Cash', 'UPI', 'Debit Card', 'Credit Card', 'Bank Transfer', 'Other'
   ]);
 
   const [loading, setLoading] = useState(false);
+
+  // Compute available subcategories based on active Category
+  const availableSubcategories = useMemo(() => {
+    if (!category) return [];
+    const group = HIERARCHICAL_CATEGORIES.find(
+      c => c.parent.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(c.parent.toLowerCase())
+    );
+    return group ? group.subcategories : [];
+  }, [category]);
+
+  // Reset subcategory when category changes
+  useEffect(() => {
+    setSubcategory('');
+  }, [category]);
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -69,6 +85,7 @@ export default function AddTransaction() {
         date: formattedDate,
         description: description.trim(),
         category: category || categoriesList[0],
+        subcategory: subcategory,
         amount: numAmount,
         paymentMethod: paymentMethod || paymentMethodsList[0],
         notes: notes.trim()
@@ -80,6 +97,7 @@ export default function AddTransaction() {
       setDescription('');
       setAmount('');
       setNotes('');
+      setSubcategory('');
 
       // Navigate to History or Dashboard
       navigate('/transactions/history');
@@ -182,8 +200,30 @@ export default function AddTransaction() {
                 <option key={idx} value={cat}>{cat}</option>
               ))}
             </select>
-            <p className="mt-1 text-[11px] text-slate-500">Dynamically loaded from Google Sheets LISTS</p>
           </div>
+
+          {/* FIELD 3.5: SUBCATEGORY */}
+          {availableSubcategories.length > 0 && (
+            <div className="p-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl space-y-2">
+              <label className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider flex items-center space-x-2">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                <span>3.1 Subcategory (Optional Tag)</span>
+              </label>
+              <select
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+                className="w-full bg-slate-900 border border-indigo-500/30 focus:border-indigo-500 rounded-xl py-2.5 px-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+              >
+                <option value="">-- Select Subcategory (Optional) --</option>
+                {availableSubcategories.map((sub, idx) => (
+                  <option key={idx} value={sub}>{sub}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-slate-500">
+                Detailed sub-classification for <strong className="text-slate-300">{category}</strong>
+              </p>
+            </div>
+          )}
 
           {/* FIELD 4: AMOUNT */}
           <div>
