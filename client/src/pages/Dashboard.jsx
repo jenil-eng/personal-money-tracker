@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getTransactionsApi, getEarningsApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
   isThisMonth, 
   parseDDMMYYYY, 
   getCurrentMonthISO, 
-  isDateInMonth, 
-  isDateInRange,
-  formatMonthLabel
+  formatMonthLabel,
+  ddmmYYYYtoISO
 } from '../utils/formatters';
 import { CategoryPill, getCategoryMeta } from '../utils/categoryUtils';
 import StatCard from '../components/common/StatCard';
@@ -17,17 +16,17 @@ import {
   ArrowDownCircle, 
   ArrowUpCircle, 
   Wallet, 
-  Calendar as CalendarIcon, 
   TrendingUp, 
+  TrendingDown,
   PieChart as PieChartIcon,
-  BarChart3,
   Clock,
   RefreshCw,
-  X,
   Zap,
   Target,
-  ShieldCheck,
-  TrendingDown
+  PiggyBank,
+  Percent,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -39,9 +38,7 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  Legend,
-  BarChart,
-  Bar
+  Legend
 } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -52,16 +49,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Budget Goal State (defaults to 15,000 INR monthly target)
+  // Default monthly budget limit
   const [monthlyBudget] = useState(15000);
-
-  // Date Filter State
-  const [filterMode, setFilterMode] = useState('all'); 
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthISO());
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-
-  const navigate = useNavigate();
 
   const fetchData = async (showToast = false) => {
     try {
@@ -72,10 +61,10 @@ export default function Dashboard() {
       ]);
       setTransactions(txRes.data || []);
       setEarnings(earnRes.data || []);
-      if (showToast) toast.success('Dashboard refreshed successfully');
+      if (showToast) toast.success('Dashboard refreshed');
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      toast.error('Unable to connect to backend service.');
+      toast.error('Unable to connect to backend.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -86,54 +75,60 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const filterRecord = (item) => {
-    if (filterMode === 'all') return true;
-    if (filterMode === 'current_month') return isThisMonth(item.date);
-    if (filterMode === 'specific_month') return isDateInMonth(item.date, selectedMonth);
-    if (filterMode === 'custom_range') return isDateInRange(item.date, dateFrom, dateTo);
-    return true;
-  };
+  // Overall Totals
+  const totalIncome = earnings.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const totalExpenses = transactions.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const totalSavings = totalIncome - totalExpenses;
+  const savingsRatePercent = totalIncome > 0 ? Math.max(0, Math.round((totalSavings / totalIncome) * 100)) : 0;
 
-  const filteredTransactions = transactions.filter(filterRecord);
-  const filteredEarnings = earnings.filter(filterRecord);
+  // Current Month vs Previous Month Comparisons
+  const now = new Date();
+  const currentMonthISO = getCurrentMonthISO();
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthISO = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-  // Overall Lifetime Totals
-  const lifetimeEarned = earnings.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const lifetimeSpent = transactions.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const lifetimeBalance = lifetimeEarned - lifetimeSpent;
+  const currentMonthExpenses = transactions
+    .filter(t => {
+      const iso = ddmmYYYYtoISO(t.date);
+      return iso.startsWith(currentMonthISO);
+    })
+    .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-  // Period Totals
-  const periodEarned = filteredEarnings.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const periodSpent = filteredTransactions.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const periodBalance = periodEarned - periodSpent;
+  const prevMonthExpenses = transactions
+    .filter(t => {
+      const iso = ddmmYYYYtoISO(t.date);
+      return iso.startsWith(prevMonthISO);
+    })
+    .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-  // Budget Progress Ratio
-  const currentMonthSpent = transactions.filter(t => isThisMonth(t.date)).reduce((s, item) => s + (Number(item.amount) || 0), 0);
-  const budgetRatio = Math.min(Math.round((currentMonthSpent / monthlyBudget) * 100), 100);
+  // Month-over-Month % Change
+  let momPercentChange = 0;
+  if (prevMonthExpenses > 0) {
+    momPercentChange = Math.round(((currentMonthExpenses - prevMonthExpenses) / prevMonthExpenses) * 100);
+  }
 
-  // Category Breakdown with custom visual meta
+  // Budget Progress
+  const budgetRatio = Math.min(Math.round((currentMonthExpenses / monthlyBudget) * 100), 100);
+
+  // Top Spending Categories
   const categoryMap = {};
-  filteredTransactions.forEach(t => {
+  transactions.forEach(t => {
     const cat = t.category || 'Other';
     categoryMap[cat] = (categoryMap[cat] || 0) + (Number(t.amount) || 0);
   });
-  const categoryData = Object.keys(categoryMap).map(cat => {
-    const meta = getCategoryMeta(cat);
-    return {
-      name: cat,
-      value: categoryMap[cat],
-      color: meta.color
-    };
-  });
+  const topCategories = Object.keys(categoryMap)
+    .map(cat => ({ name: cat, amount: categoryMap[cat], meta: getCategoryMeta(cat) }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 4);
 
-  // Timeline (Daily/Weekly Trend)
+  // Timeline (Monthly Trend visualization)
   const timelineMap = {};
-  filteredEarnings.forEach(e => {
+  earnings.forEach(e => {
     const d = e.date;
     if (!timelineMap[d]) timelineMap[d] = { date: d, timestamp: parseDDMMYYYY(d).getTime(), Earned: 0, Spent: 0 };
     timelineMap[d].Earned += Number(e.amount) || 0;
   });
-  filteredTransactions.forEach(t => {
+  transactions.forEach(t => {
     const d = t.date;
     if (!timelineMap[d]) timelineMap[d] = { date: d, timestamp: parseDDMMYYYY(d).getTime(), Earned: 0, Spent: 0 };
     timelineMap[d].Spent += Number(t.amount) || 0;
@@ -142,44 +137,19 @@ export default function Dashboard() {
     .sort((a, b) => a.timestamp - b.timestamp)
     .slice(-14);
 
-  // Recent Activity
-  const formattedTx = filteredTransactions.map(t => ({
-    ...t,
-    type: 'transaction',
-    timestamp: parseDDMMYYYY(t.date).getTime()
-  }));
-  const formattedEarn = filteredEarnings.map(e => ({
-    ...e,
-    type: 'earning',
-    timestamp: parseDDMMYYYY(e.date).getTime()
-  }));
-
+  // Recent Activity Feed
+  const formattedTx = transactions.map(t => ({ ...t, type: 'transaction', timestamp: parseDDMMYYYY(t.date).getTime() }));
+  const formattedEarn = earnings.map(e => ({ ...e, type: 'earning', timestamp: parseDDMMYYYY(e.date).getTime() }));
   const recentActivity = [...formattedTx, ...formattedEarn]
     .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 6);
-
-  const getPeriodLabel = () => {
-    if (filterMode === 'all') return 'Lifetime All Records';
-    if (filterMode === 'current_month') return 'Current Month (' + formatMonthLabel(getCurrentMonthISO()) + ')';
-    if (filterMode === 'specific_month') return 'Selected Month (' + formatMonthLabel(selectedMonth) + ')';
-    if (filterMode === 'custom_range') {
-      return `Custom Range (${dateFrom || 'Start'} to ${dateTo || 'End'})`;
-    }
-    return '';
-  };
-
-  const handleResetFilter = () => {
-    setFilterMode('all');
-    setSelectedMonth(getCurrentMonthISO());
-    setDateFrom('');
-    setDateTo('');
-  };
+    .slice(0, 5);
 
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-slate-800 rounded-lg" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="h-36 bg-slate-900/80 rounded-2xl" />
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
@@ -191,210 +161,144 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       
-      {/* 1. TOP HEADER & REFRESH */}
+      {/* 1. TOP HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-2">
-            <span>Main Dashboard</span>
+            <span>Financial Dashboard</span>
             <span className="text-xs bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-1 rounded-full border border-indigo-500/30">
-              Live
+              Live Overview
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">Personal Finances & Analytics Overview</p>
+          <p className="text-xs sm:text-sm text-slate-400">Overview & Financial Health Analytics</p>
         </div>
 
-        <button
-          onClick={() => fetchData(true)}
-          disabled={refreshing}
-          className="inline-flex items-center space-x-2 px-3.5 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-50 self-start sm:self-auto shadow-md"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          <span>Refresh Data</span>
-        </button>
-      </div>
-
-      {/* 2. COMBINED HIGH-SPEED TOP CONTROL CARD (QUICK ACTIONS + DATE SELECTOR) */}
-      <div className="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
-        
-        {/* ROW A: QUICK ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80">
-          <div className="flex items-center space-x-2 text-slate-300 text-xs sm:text-sm font-semibold">
-            <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />
-            <span>Fast Quick Actions:</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:flex items-center gap-2.5">
-            <Link
-              to="/earnings/add"
-              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-emerald-600/25"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Add Income</span>
-            </Link>
-            <Link
-              to="/transactions/add"
-              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-rose-600/25"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Add Expense</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* ROW B: DATE / PERIOD SELECTOR PILLS */}
-        <div className="space-y-3">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center space-x-2 text-indigo-300 font-bold text-xs sm:text-sm">
-              <CalendarIcon className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-              <span>TIME PERIOD:</span>
-              <span className="text-xs font-normal text-slate-400 border-l border-slate-700 pl-2 truncate max-w-[200px] sm:max-w-none">
-                {getPeriodLabel()}
-              </span>
-            </div>
-
-            {/* Horizontal Scrollable Pills for Mobile */}
-            <div className="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
-              <button
-                onClick={() => setFilterMode('all')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                  filterMode === 'all'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-950/70 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                All Time
-              </button>
-              <button
-                onClick={() => setFilterMode('current_month')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                  filterMode === 'current_month'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-950/70 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Current Month
-              </button>
-              <button
-                onClick={() => setFilterMode('specific_month')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                  filterMode === 'specific_month'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-950/70 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Select Month
-              </button>
-              <button
-                onClick={() => setFilterMode('custom_range')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                  filterMode === 'custom_range'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-950/70 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Custom Range
-              </button>
-
-              {filterMode !== 'all' && (
-                <button
-                  onClick={handleResetFilter}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
-                  title="Reset Filter"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Conditional Month or Range Inputs */}
-          {filterMode === 'specific_month' && (
-            <div className="pt-2 border-t border-slate-800/80 flex items-center space-x-3">
-              <label className="text-xs text-slate-300 font-medium">Month & Year:</label>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
-              <span className="text-xs text-indigo-300 font-semibold">
-                {formatMonthLabel(selectedMonth)}
-              </span>
-            </div>
-          )}
-
-          {filterMode === 'custom_range' && (
-            <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-slate-300">From:</span>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-slate-300">To:</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none"
-                />
-              </div>
-            </div>
-          )}
+        <div className="flex items-center space-x-2.5 self-start sm:self-auto">
+          <button
+            onClick={() => fetchData(true)}
+            disabled={refreshing}
+            className="inline-flex items-center space-x-2 px-3.5 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-50 shadow-md"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <Link
+            to="/transactions/add"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>+ Add</span>
+          </Link>
         </div>
       </div>
 
-      {/* 3. FINANCIAL METRIC STAT CARDS */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            {filterMode === 'all' ? 'Lifetime Financial Summary' : `Period Summary (${getPeriodLabel()})`}
-          </h2>
-          {filterMode !== 'all' && (
-            <span className="text-[11px] text-indigo-400 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
-              Active Filter
-            </span>
-          )}
+      {/* 2. FINTECH 4-METRIC STAT CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Balance */}
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-indigo-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Balance</span>
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <Wallet className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-3 tracking-tight">
+            {formatAmount(totalSavings)}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">Available capital balance</p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <StatCard
-            title={filterMode === 'all' ? "Total Income" : "Period Income"}
-            amount={formatAmount(periodEarned)}
-            icon={ArrowUpCircle}
-            type="earned"
-            subtitle={`${filteredEarnings.length} earning entries`}
-          />
-          <StatCard
-            title={filterMode === 'all' ? "Total Expenses" : "Period Expenses"}
-            amount={formatAmount(periodSpent)}
-            icon={ArrowDownCircle}
-            type="spent"
-            subtitle={`${filteredTransactions.length} expense entries`}
-          />
-          <StatCard
-            title={filterMode === 'all' ? "Net Savings / Balance" : "Period Savings"}
-            amount={formatAmount(periodBalance)}
-            icon={Wallet}
-            type="balance"
-            subtitle="Net available capital"
-          />
+
+        {/* Total Income */}
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-emerald-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Income</span>
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <ArrowUpCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-3 tracking-tight">
+            {formatAmount(totalIncome)}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">{earnings.length} total income records</p>
+        </div>
+
+        {/* Total Expenses */}
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-rose-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</span>
+            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <ArrowDownCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black text-rose-400 mt-3 tracking-tight">
+            {formatAmount(totalExpenses)}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">{transactions.length} total expense records</p>
+        </div>
+
+        {/* Savings Rate % */}
+        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-amber-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Savings Rate</span>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Percent className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline space-x-2 mt-3">
+            <p className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
+              {savingsRatePercent}%
+            </p>
+            <span className="text-xs text-slate-400">of total earnings</span>
+          </div>
+          <div className="w-full h-1.5 bg-slate-950 rounded-full mt-2 overflow-hidden border border-slate-800">
+            <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full" style={{ width: `${Math.min(savingsRatePercent, 100)}%` }} />
+          </div>
         </div>
       </div>
 
-      {/* 4. BUDGET TARGET PROGRESS & LIFETIME REFERENCE */}
+      {/* 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON & BUDGET TARGET */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Monthly Budget Target Card */}
+        {/* Monthly Comparison Card */}
+        <div className="glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Monthly Spending Comparison</span>
+              <span className="text-[11px] font-semibold text-slate-400">{formatMonthLabel(currentMonthISO)}</span>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs text-slate-400">Current Month Spending:</span>
+                <p className="text-xl font-extrabold text-white mt-0.5">{formatAmount(currentMonthExpenses)}</p>
+              </div>
+
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <span className="text-slate-400">Previous Month ({formatMonthLabel(prevMonthISO)}):</span>
+                <span className="font-semibold text-slate-300">{formatAmount(prevMonthExpenses)}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                <span className="text-xs text-slate-400 font-medium">Month-over-Month:</span>
+                <span className={`inline-flex items-center space-x-1 font-extrabold text-xs px-2 py-0.5 rounded-md ${
+                  momPercentChange <= 0 
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                }`}>
+                  {momPercentChange <= 0 ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
+                  <span>{momPercentChange > 0 ? `+${momPercentChange}%` : `${momPercentChange}%`}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Budget Progress Card */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Target className="w-5 h-5 text-indigo-400" />
-                <h3 className="font-bold text-white text-base">Monthly Spending Limit</h3>
+                <h3 className="font-bold text-white text-base">Monthly Spending Limit Progress</h3>
               </div>
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
                 budgetRatio > 90 
@@ -408,7 +312,7 @@ export default function Dashboard() {
             </div>
 
             <p className="text-xs text-slate-400 mb-4">
-              Current month spent <strong className="text-slate-200">{formatAmount(currentMonthSpent)}</strong> out of <strong className="text-slate-200">{formatAmount(monthlyBudget)}</strong> target.
+              Spent <strong className="text-slate-200">{formatAmount(currentMonthExpenses)}</strong> of <strong className="text-slate-200">{formatAmount(monthlyBudget)}</strong> monthly budget target.
             </p>
 
             {/* Progress Bar */}
@@ -427,48 +331,27 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Remaining Budget: <strong className="text-emerald-400">{formatAmount(Math.max(0, monthlyBudget - currentMonthSpent))}</strong></span>
-            <span>Target: {formatAmount(monthlyBudget)} / mo</span>
-          </div>
-        </div>
-
-        {/* Lifetime Reference Card */}
-        <div className="glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
-          <div className="flex items-center space-x-2 mb-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-bold text-white text-base">Lifetime Capital</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between py-1.5 border-b border-slate-800/60">
-              <span className="text-slate-400">Lifetime Income:</span>
-              <strong className="text-emerald-400">{formatAmount(lifetimeEarned)}</strong>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-800/60">
-              <span className="text-slate-400">Lifetime Expenses:</span>
-              <strong className="text-rose-400">{formatAmount(lifetimeSpent)}</strong>
-            </div>
-            <div className="flex justify-between py-1.5">
-              <span className="text-slate-400 font-semibold">Lifetime Balance:</span>
-              <strong className="text-indigo-300 font-bold">{formatAmount(lifetimeBalance)}</strong>
-            </div>
+            <span>Remaining Capacity: <strong className="text-emerald-400">{formatAmount(Math.max(0, monthlyBudget - currentMonthExpenses))}</strong></span>
+            <Link to="/budgets" className="text-indigo-400 hover:underline font-semibold">Manage Budgets →</Link>
           </div>
         </div>
       </div>
 
-      {/* 5. CHARTS SECTION */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart 1: Income vs Spending Over Time */}
-        <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl">
+      {/* 4. CHARTS & TOP SPENDING CATEGORIES */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Income vs Spending Trend Chart */}
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-slate-100 flex items-center space-x-2">
               <TrendingUp className="w-5 h-5 text-indigo-400" />
-              <span>Income vs Spending Trend</span>
+              <span>Cash Flow & Spending Trend</span>
             </h3>
-            <span className="text-xs text-slate-500 font-medium">{getPeriodLabel()}</span>
+            <span className="text-xs text-slate-500 font-medium">Recent Timeline</span>
           </div>
+
           {timelineData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-slate-500 text-sm">
-              No entries recorded for selected period.
+              No financial entries recorded.
             </div>
           ) : (
             <div className="h-64 w-full">
@@ -498,54 +381,47 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Chart 2: Spending by Category */}
-        <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-slate-100 flex items-center space-x-2">
-              <PieChartIcon className="w-5 h-5 text-rose-400" />
-              <span>Expense Categories</span>
-            </h3>
-            <span className="text-xs text-slate-500 font-medium">{getPeriodLabel()}</span>
+        {/* Top Spending Categories List */}
+        <div className="glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-3">
+              <h3 className="font-bold text-white text-base flex items-center space-x-2">
+                <PieChartIcon className="w-5 h-5 text-rose-400" />
+                <span>Top Categories</span>
+              </h3>
+              <Link to="/analytics" className="text-xs text-indigo-400 hover:underline font-semibold">Analytics →</Link>
+            </div>
+
+            {topCategories.length === 0 ? (
+              <div className="py-12 text-center text-slate-500 text-xs">No expense records found.</div>
+            ) : (
+              <div className="space-y-3">
+                {topCategories.map((cat, idx) => {
+                  const pct = totalExpenses > 0 ? Math.round((cat.amount / totalExpenses) * 100) : 0;
+                  return (
+                    <div key={idx} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <CategoryPill category={cat.name} />
+                        <span className="font-bold text-rose-400">{formatAmount(cat.amount)} ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.meta.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          {categoryData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-slate-500 text-sm">
-              No transactions recorded for selected period.
-            </div>
-          ) : (
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#f8fafc' }}
-                    formatter={(val) => [formatAmount(val)]}
-                  />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* 6. RECENT ACTIVITY FEED */}
+      {/* 5. RECENT TRANSACTIONS FEED */}
       <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center space-x-2.5">
             <Clock className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-slate-100">Recent Activity ({getPeriodLabel()})</h3>
+            <h3 className="text-base font-bold text-slate-100">Recent Activity Feed</h3>
           </div>
           <Link to="/transactions/history" className="text-xs text-indigo-400 hover:underline font-semibold">
             View All History →
@@ -554,7 +430,7 @@ export default function Dashboard() {
 
         {recentActivity.length === 0 ? (
           <div className="py-12 text-center text-slate-500 text-sm">
-            No transactions or earnings found for the selected date period.
+            No recent activity recorded yet.
           </div>
         ) : (
           <div className="divide-y divide-slate-800/80">

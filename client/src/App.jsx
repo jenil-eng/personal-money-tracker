@@ -12,6 +12,9 @@ import EarningsDashboard from './pages/earnings/EarningsDashboard';
 import AddEarning from './pages/earnings/AddEarning';
 import EditEarning from './pages/earnings/EditEarning';
 import EarningsHistory from './pages/earnings/EarningsHistory';
+import Analytics from './pages/Analytics';
+import Budgets from './pages/Budgets';
+import Categories from './pages/Categories';
 import Settings from './pages/Settings';
 import { Toaster } from 'react-hot-toast';
 
@@ -52,6 +55,15 @@ export default function App() {
             <Route path="/earnings/add" element={<AddEarning />} />
             <Route path="/earnings/:id/edit" element={<EditEarning />} />
             <Route path="/earnings/history" element={<EarningsHistory />} />
+
+            {/* Analytics */}
+            <Route path="/analytics" element={<Analytics />} />
+
+            {/* Budgets */}
+            <Route path="/budgets" element={<Budgets />} />
+
+            {/* Categories */}
+            <Route path="/categories" element={<Categories />} />
 
             {/* Settings */}
             <Route path="/settings" element={<Settings />} />

@@ -4,15 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Home, 
   ArrowDownCircle, 
-  ArrowUpCircle, 
+  BarChart3, 
+  Target, 
+  Grid, 
   Settings, 
   LogOut, 
   Menu, 
   X, 
-  ChevronDown, 
   PlusCircle, 
-  History, 
-  LayoutDashboard,
   Wallet,
   Eye,
   EyeOff
@@ -24,8 +23,6 @@ export default function Sidebar() {
   const location = useLocation();
   
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [transactionsOpen, setTransactionsOpen] = useState(location.pathname.startsWith('/transactions'));
-  const [earningsOpen, setEarningsOpen] = useState(location.pathname.startsWith('/earnings'));
 
   const handleLogout = () => {
     logout();
@@ -33,6 +30,15 @@ export default function Sidebar() {
   };
 
   const closeMobile = () => setMobileOpen(false);
+
+  const navItems = [
+    { to: '/dashboard', label: 'Dashboard', icon: Home },
+    { to: '/transactions/history', label: 'Transactions', icon: ArrowDownCircle },
+    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/budgets', label: 'Budgets', icon: Target },
+    { to: '/categories', label: 'Categories', icon: Grid },
+    { to: '/settings', label: 'Settings', icon: Settings },
+  ];
 
   return (
     <>
@@ -44,12 +50,12 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="font-bold text-white text-base leading-none">Money Tracker</h1>
-            <span className="text-[11px] text-indigo-400 font-medium">Private Student Finance</span>
+            <span className="text-[11px] text-indigo-400 font-medium">Fintech Personal Finance</span>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Privacy mode toggle button on mobile */}
+          {/* Privacy mode toggle button */}
           <button
             onClick={togglePrivacyMode}
             className={`p-2 rounded-lg transition ${
@@ -93,7 +99,7 @@ export default function Sidebar() {
               </div>
               <div>
                 <h2 className="font-bold text-white text-lg tracking-tight">Money Tracker</h2>
-                <p className="text-xs text-indigo-400 font-medium">Private Student Finance</p>
+                <p className="text-xs text-indigo-400 font-medium">Fintech Personal Finance</p>
               </div>
             </div>
 
@@ -111,159 +117,40 @@ export default function Sidebar() {
             </button>
           </div>
 
+          {/* Quick Action Button */}
+          <div className="p-4 border-b border-slate-800/60">
+            <NavLink
+              to="/transactions/add"
+              onClick={closeMobile}
+              className="w-full inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>+ Add Transaction</span>
+            </NavLink>
+          </div>
+
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-180px)]">
-            {/* Dashboard */}
-            <NavLink
-              to="/dashboard"
-              onClick={closeMobile}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`
-              }
-            >
-              <Home className="w-5 h-5" />
-              <span>Dashboard</span>
-            </NavLink>
-
-            {/* Transactions Section */}
-            <div>
-              <button
-                onClick={() => setTransactionsOpen(!transactionsOpen)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  location.pathname.startsWith('/transactions')
-                    ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <ArrowDownCircle className="w-5 h-5 text-rose-500" />
-                  <span>Transactions</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 transition-transform ${transactionsOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {transactionsOpen && (
-                <div className="mt-1 ml-4 pl-3 border-l border-slate-800/80 space-y-1">
-                  <NavLink
-                    to="/transactions"
-                    end
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>Overview</span>
-                  </NavLink>
-                  <NavLink
-                    to="/transactions/add"
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    <span>Add Transaction</span>
-                  </NavLink>
-                  <NavLink
-                    to="/transactions/history"
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <History className="w-4 h-4" />
-                    <span>History</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
-
-            {/* Earnings Section */}
-            <div>
-              <button
-                onClick={() => setEarningsOpen(!earningsOpen)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  location.pathname.startsWith('/earnings')
-                    ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <ArrowUpCircle className="w-5 h-5 text-emerald-500" />
-                  <span>Earnings</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 transition-transform ${earningsOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {earningsOpen && (
-                <div className="mt-1 ml-4 pl-3 border-l border-slate-800/80 space-y-1">
-                  <NavLink
-                    to="/earnings"
-                    end
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>Overview</span>
-                  </NavLink>
-                  <NavLink
-                    to="/earnings/add"
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    <span>Add Earning</span>
-                  </NavLink>
-                  <NavLink
-                    to="/earnings/history"
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        isActive ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-white'
-                      }`
-                    }
-                  >
-                    <History className="w-4 h-4" />
-                    <span>History</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
-
-            {/* Settings */}
-            <NavLink
-              to="/settings"
-              onClick={closeMobile}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`
-              }
-            >
-              <Settings className="w-5 h-5" />
-              <span>Settings</span>
-            </NavLink>
+          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-240px)]">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={closeMobile}
+                  className={({ isActive }) =>
+                    `flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                      isActive
+                        ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
           </nav>
         </div>
 

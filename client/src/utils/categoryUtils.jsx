@@ -17,86 +17,121 @@ import {
   Landmark,
   CreditCard,
   Banknote,
-  DollarSign
+  DollarSign,
+  Coffee,
+  Zap,
+  Smartphone,
+  Home,
+  Tv,
+  Gamepad2,
+  Ticket,
+  HeartPulse,
+  BookOpen,
+  Scissors
 } from 'lucide-react';
 
-export const CATEGORY_META = {
-  Food: {
+export const HIERARCHICAL_CATEGORIES = [
+  {
+    parent: 'Food & Dining',
     icon: Utensils,
-    bg: 'bg-amber-500/15',
-    text: 'text-amber-400',
-    border: 'border-amber-500/30',
-    badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    color: '#f59e0b'
+    color: '#f59e0b',
+    badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    subcategories: ['Restaurants', 'Fast Food', 'Groceries', 'Coffee']
   },
-  Travel: {
+  {
+    parent: 'Transport',
     icon: Car,
-    bg: 'bg-sky-500/15',
-    text: 'text-sky-400',
-    border: 'border-sky-500/30',
-    badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
-    color: '#0ea5e9'
+    color: '#0ea5e9',
+    badge: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
+    subcategories: ['Fuel', 'Public Transport', 'Taxi', 'Maintenance']
   },
-  Shopping: {
+  {
+    parent: 'Shopping',
     icon: ShoppingBag,
-    bg: 'bg-ecstasy-500/15',
-    text: 'text-purple-400',
-    border: 'border-purple-500/30',
-    badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    color: '#a855f7'
+    color: '#a855f7',
+    badge: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+    subcategories: ['Clothing', 'Electronics', 'Personal Care', 'Accessories']
   },
-  Entertainment: {
-    icon: Film,
-    bg: 'bg-rose-500/15',
-    text: 'text-rose-400',
-    border: 'border-rose-500/30',
-    badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-    color: '#f43f5e'
-  },
-  Education: {
-    icon: GraduationCap,
-    bg: 'bg-indigo-500/15',
-    text: 'text-indigo-400',
-    border: 'border-indigo-500/30',
-    badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-    color: '#6366f1'
-  },
-  Bills: {
+  {
+    parent: 'Bills & Utilities',
     icon: Receipt,
-    bg: 'bg-orange-500/15',
-    text: 'text-orange-400',
-    border: 'border-orange-500/30',
-    badge: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-    color: '#f97316'
+    color: '#f97316',
+    badge: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+    subcategories: ['Electricity', 'Internet', 'Mobile', 'Rent', 'Water']
   },
-  Personal: {
+  {
+    parent: 'Entertainment',
+    icon: Film,
+    color: '#f43f5e',
+    badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+    subcategories: ['Movies', 'Games', 'Events', 'Subscriptions']
+  },
+  {
+    parent: 'Personal & Health',
     icon: User,
-    bg: 'bg-teal-500/15',
-    text: 'text-teal-400',
-    border: 'border-teal-500/30',
-    badge: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-    color: '#14b8a6'
+    color: '#14b8a6',
+    badge: 'bg-teal-500/15 text-teal-300 border-teal-500/30',
+    subcategories: ['Education', 'Books', 'Fitness', 'Medical', 'Personal']
   },
-  Other: {
+  {
+    parent: 'Other',
     icon: Tag,
-    bg: 'bg-slate-500/15',
-    text: 'text-slate-400',
-    border: 'border-slate-500/30',
-    badge: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-    color: '#64748b'
+    color: '#64748b',
+    badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+    subcategories: ['General', 'Miscellaneous']
   }
+];
+
+export const CATEGORY_META = {
+  'Food & Dining': { icon: Utensils, badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30', color: '#f59e0b' },
+  Food: { icon: Utensils, badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30', color: '#f59e0b' },
+  Transport: { icon: Car, badge: 'bg-sky-500/15 text-sky-300 border-sky-500/30', color: '#0ea5e9' },
+  Travel: { icon: Car, badge: 'bg-sky-500/15 text-sky-300 border-sky-500/30', color: '#0ea5e9' },
+  Shopping: { icon: ShoppingBag, badge: 'bg-purple-500/15 text-purple-300 border-purple-500/30', color: '#a855f7' },
+  'Bills & Utilities': { icon: Receipt, badge: 'bg-orange-500/15 text-orange-300 border-orange-500/30', color: '#f97316' },
+  Bills: { icon: Receipt, badge: 'bg-orange-500/15 text-orange-300 border-orange-500/30', color: '#f97316' },
+  Entertainment: { icon: Film, badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30', color: '#f43f5e' },
+  Education: { icon: GraduationCap, badge: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30', color: '#6366f1' },
+  'Personal & Health': { icon: User, badge: 'bg-teal-500/15 text-teal-300 border-teal-500/30', color: '#14b8a6' },
+  Personal: { icon: User, badge: 'bg-teal-500/15 text-teal-300 border-teal-500/30', color: '#14b8a6' },
+  Other: { icon: Tag, badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30', color: '#64748b' }
+};
+
+export const SUBCATEGORY_META = {
+  Restaurants: Utensils,
+  'Fast Food': Utensils,
+  Groceries: ShoppingBag,
+  Coffee: Coffee,
+  Fuel: Car,
+  'Public Transport': Car,
+  Taxi: Car,
+  Maintenance: Car,
+  Clothing: ShoppingBag,
+  Electronics: Tv,
+  'Personal Care': Scissors,
+  Electricity: Zap,
+  Internet: Zap,
+  Mobile: Smartphone,
+  Rent: Home,
+  Movies: Film,
+  Games: Gamepad2,
+  Events: Ticket,
+  Education: GraduationCap,
+  Books: BookOpen,
+  Fitness: HeartPulse,
+  Medical: HeartPulse
 };
 
 export const SOURCE_META = {
-  'Pocket Money': { icon: Wallet, color: '#10b981', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  Gift: { icon: Gift, color: '#ec4899', badge: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-  Freelancing: { icon: Briefcase, color: '#8b5cf6', badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30' },
-  Business: { icon: Landmark, color: '#3b82f6', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-  Navratri: { icon: Sparkles, color: '#f59e0b', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-  Scholarship: { icon: Award, color: '#06b6d4', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
-  Refund: { icon: RefreshCw, color: '#14b8a6', badge: 'bg-teal-500/20 text-teal-300 border-teal-500/30' },
-  'IPO Allocation': { icon: Landmark, color: '#10b981', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  Other: { icon: Tag, color: '#64748b', badge: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+  'Pocket Money': { icon: Wallet, color: '#10b981', badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+  Gift: { icon: Gift, color: '#ec4899', badge: 'bg-pink-500/15 text-pink-300 border-pink-500/30' },
+  Freelancing: { icon: Briefcase, color: '#8b5cf6', badge: 'bg-violet-500/15 text-violet-300 border-violet-500/30' },
+  Business: { icon: Landmark, color: '#3b82f6', badge: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+  Navratri: { icon: Sparkles, color: '#f59e0b', badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
+  Scholarship: { icon: Award, color: '#06b6d4', badge: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' },
+  Refund: { icon: RefreshCw, color: '#14b8a6', badge: 'bg-teal-500/15 text-teal-300 border-teal-500/30' },
+  'IPO Allocation': { icon: Landmark, color: '#10b981', badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+  Other: { icon: Tag, color: '#64748b', badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30' }
 };
 
 export const PAYMENT_META = {
@@ -120,6 +155,15 @@ export function getPaymentMeta(paymentName) {
   return PAYMENT_META[paymentName] || PAYMENT_META.Other;
 }
 
+export function getParentCategory(categoryOrSubcategory) {
+  for (const group of HIERARCHICAL_CATEGORIES) {
+    if (group.parent === categoryOrSubcategory || group.subcategories.includes(categoryOrSubcategory)) {
+      return group.parent;
+    }
+  }
+  return 'Other';
+}
+
 export function CategoryPill({ category }) {
   const meta = getCategoryMeta(category);
   const Icon = meta.icon;
@@ -138,6 +182,16 @@ export function SourcePill({ source }) {
     <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${meta.badge}`}>
       <Icon className="w-3.5 h-3.5" />
       <span>{source}</span>
+    </span>
+  );
+}
+
+export function SubcategoryPill({ subcategory }) {
+  const Icon = SUBCATEGORY_META[subcategory] || Tag;
+  return (
+    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+      <Icon className="w-3 h-3 text-indigo-400" />
+      <span>{subcategory}</span>
     </span>
   );
 }

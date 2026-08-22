@@ -3,8 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { 
   Home, 
   ArrowDownCircle, 
-  ArrowUpCircle, 
-  Settings, 
+  BarChart3, 
+  Target, 
   Plus
 } from 'lucide-react';
 
@@ -12,7 +12,7 @@ export default function BottomNav() {
   return (
     <nav 
       aria-label="Mobile Navigation"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-2 flex items-center justify-around shadow-2xl"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-2 flex items-center justify-around shadow-2xl pb-safe"
     >
       {/* Dashboard */}
       <NavLink
@@ -27,10 +27,9 @@ export default function BottomNav() {
         <span className="text-[10px] tracking-tight">Home</span>
       </NavLink>
 
-      {/* Expenses */}
+      {/* Transactions */}
       <NavLink
-        to="/transactions"
-        end
+        to="/transactions/history"
         className={({ isActive }) =>
           `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
             isActive ? 'text-rose-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
@@ -38,7 +37,7 @@ export default function BottomNav() {
         }
       >
         <ArrowDownCircle className="w-5 h-5 mb-0.5" />
-        <span className="text-[10px] tracking-tight">Expenses</span>
+        <span className="text-[10px] tracking-tight">Transactions</span>
       </NavLink>
 
       {/* Floating Quick Add */}
@@ -52,31 +51,30 @@ export default function BottomNav() {
         <span className="text-[10px] text-indigo-300 font-medium mt-0.5">Add</span>
       </NavLink>
 
-      {/* Earnings */}
+      {/* Analytics */}
       <NavLink
-        to="/earnings"
-        end
-        className={({ isActive }) =>
-          `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
-            isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
-          }`
-        }
-      >
-        <ArrowUpCircle className="w-5 h-5 mb-0.5" />
-        <span className="text-[10px] tracking-tight">Income</span>
-      </NavLink>
-
-      {/* Settings */}
-      <NavLink
-        to="/settings"
+        to="/analytics"
         className={({ isActive }) =>
           `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
             isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`
         }
       >
-        <Settings className="w-5 h-5 mb-0.5" />
-        <span className="text-[10px] tracking-tight">Settings</span>
+        <BarChart3 className="w-5 h-5 mb-0.5" />
+        <span className="text-[10px] tracking-tight">Analytics</span>
+      </NavLink>
+
+      {/* Budgets */}
+      <NavLink
+        to="/budgets"
+        className={({ isActive }) =>
+          `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+            isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
+          }`
+        }
+      >
+        <Target className="w-5 h-5 mb-0.5" />
+        <span className="text-[10px] tracking-tight">Budgets</span>
       </NavLink>
     </nav>
   );
