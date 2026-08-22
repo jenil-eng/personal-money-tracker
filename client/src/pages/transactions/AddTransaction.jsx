@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addTransactionApi, getSettingsApi } from '../../services/api';
 import { getTodayISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { HIERARCHICAL_CATEGORIES } from '../../utils/categoryUtils';
+import { getSubcategoriesForCategory } from '../../utils/categoryUtils';
 import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, ArrowDownCircle, ArrowUpCircle, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,7 +20,7 @@ export default function AddTransaction() {
 
   // Lists state
   const [categoriesList, setCategoriesList] = useState([
-    'Food & Dining', 'Transport', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Personal & Health', 'Other'
+    'Food', 'Travel', 'Shopping', 'Entertainment', 'Education', 'Bills', 'Personal', 'Other'
   ]);
   const [paymentMethodsList, setPaymentMethodsList] = useState([
     'Cash', 'UPI', 'Debit Card', 'Credit Card', 'Bank Transfer', 'Other'
@@ -30,11 +30,7 @@ export default function AddTransaction() {
 
   // Compute available subcategories based on active Category
   const availableSubcategories = useMemo(() => {
-    if (!category) return [];
-    const group = HIERARCHICAL_CATEGORIES.find(
-      c => c.parent.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(c.parent.toLowerCase())
-    );
-    return group ? group.subcategories : [];
+    return getSubcategoriesForCategory(category);
   }, [category]);
 
   // Reset subcategory when category changes

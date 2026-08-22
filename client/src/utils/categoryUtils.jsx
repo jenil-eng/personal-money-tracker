@@ -186,6 +186,45 @@ export function SourcePill({ source }) {
   );
 }
 
+export function getSubcategoriesForCategory(categoryName) {
+  if (!categoryName) return ['General', 'Miscellaneous'];
+  const cat = String(categoryName).trim().toLowerCase();
+
+  // Direct alias matching
+  if (cat.includes('food') || cat.includes('din')) {
+    return ['Restaurants', 'Fast Food', 'Groceries', 'Coffee'];
+  }
+  if (cat.includes('travel') || cat.includes('transport') || cat.includes('vehic') || cat.includes('car') || cat.includes('bike')) {
+    return ['Fuel', 'Public Transport', 'Taxi', 'Maintenance'];
+  }
+  if (cat.includes('shop') || cat.includes('cloth') || cat.includes('store')) {
+    return ['Clothing', 'Electronics', 'Personal Care', 'Accessories'];
+  }
+  if (cat.includes('bill') || cat.includes('util') || cat.includes('recharg')) {
+    return ['Electricity', 'Internet', 'Mobile', 'Rent', 'Water'];
+  }
+  if (cat.includes('entertain') || cat.includes('movi') || cat.includes('game') || cat.includes('fun')) {
+    return ['Movies', 'Games', 'Events', 'Subscriptions'];
+  }
+  if (cat.includes('educat') || cat.includes('study') || cat.includes('school') || cat.includes('colleg')) {
+    return ['Courses', 'Tuition', 'Stationery', 'Books', 'Fees'];
+  }
+  if (cat.includes('person') || cat.includes('health') || cat.includes('med') || cat.includes('fit')) {
+    return ['Education', 'Books', 'Fitness', 'Medical', 'Personal Care'];
+  }
+
+  // Fallback to HIERARCHICAL_CATEGORIES matcher
+  for (const group of HIERARCHICAL_CATEGORIES) {
+    const parentLower = group.parent.toLowerCase();
+    if (parentLower.includes(cat) || cat.includes(parentLower)) {
+      return group.subcategories;
+    }
+  }
+
+  // Default fallback for any other custom category
+  return ['General', 'Miscellaneous', 'Other'];
+}
+
 export function SubcategoryPill({ subcategory }) {
   const Icon = SUBCATEGORY_META[subcategory] || Tag;
   return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTransactionsApi, updateTransactionApi, getSettingsApi } from '../../services/api';
 import { ddmmYYYYtoISO, isoToDDMMYYYY, formatINR } from '../../utils/formatters';
-import { HIERARCHICAL_CATEGORIES } from '../../utils/categoryUtils';
+import { getSubcategoriesForCategory } from '../../utils/categoryUtils';
 import { ArrowLeft, Save, Calendar, Tag, CreditCard, AlignLeft, IndianRupee, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -26,11 +26,7 @@ export default function EditTransaction() {
 
   // Compute available subcategories based on active Category
   const availableSubcategories = useMemo(() => {
-    if (!category) return [];
-    const group = HIERARCHICAL_CATEGORIES.find(
-      c => c.parent.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(c.parent.toLowerCase())
-    );
-    return group ? group.subcategories : [];
+    return getSubcategoriesForCategory(category);
   }, [category]);
 
   useEffect(() => {

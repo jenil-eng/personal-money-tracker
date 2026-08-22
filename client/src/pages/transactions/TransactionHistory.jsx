@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getTransactionsApi, getEarningsApi, deleteTransactionApi, deleteEarningApi, getSettingsApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { parseDDMMYYYY, formatMonthLabel, ddmmYYYYtoISO } from '../../utils/formatters';
-import { CategoryPill, SubcategoryPill, SourcePill, HIERARCHICAL_CATEGORIES } from '../../utils/categoryUtils';
+import { CategoryPill, SubcategoryPill, SourcePill, HIERARCHICAL_CATEGORIES, getSubcategoriesForCategory } from '../../utils/categoryUtils';
 import Modal from '../../components/common/Modal';
 import { 
   Search, 
@@ -195,8 +195,7 @@ export default function TransactionHistory() {
   };
 
   // Get available subcategories based on selected parent category
-  const selectedParentGroup = HIERARCHICAL_CATEGORIES.find(c => c.parent === filterCategory);
-  const availableSubcategories = selectedParentGroup ? selectedParentGroup.subcategories : [];
+  const availableSubcategories = getSubcategoriesForCategory(filterCategory);
 
   return (
     <div className="space-y-6">
