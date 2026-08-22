@@ -44,7 +44,7 @@ export default function EditTransaction() {
 
         const list = txRes.data || [];
         const targetId = parseInt(id, 10);
-        const item = list.find(t => t.id === targetId || t.rowNumber === targetId);
+        const item = list.find(t => Number(t.id) === targetId) || list.find(t => Number(t.rowNumber) === targetId);
 
         if (!item) {
           toast.error('Transaction record not found.');

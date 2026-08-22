@@ -66,7 +66,7 @@ async function readTransactions() {
       }
 
       return {
-        id: index + 1,
+        id: index + 2,
         rowNumber: index + 2,
         date,
         description,
@@ -288,7 +288,7 @@ async function readEarnings() {
 
     const rows = response.data.values || [];
     return rows.map((row, index) => ({
-      id: index + 1,
+      id: index + 2,
       rowNumber: index + 2,
       date: formatDate(row[0] || ''),
       description: row[1] || '',

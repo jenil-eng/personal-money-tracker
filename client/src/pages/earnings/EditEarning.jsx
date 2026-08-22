@@ -34,7 +34,7 @@ export default function EditEarning() {
 
         const list = earnRes.data || [];
         const targetId = parseInt(id, 10);
-        const item = list.find(e => e.id === targetId || e.rowNumber === targetId);
+        const item = list.find(e => Number(e.id) === targetId) || list.find(e => Number(e.rowNumber) === targetId);
 
         if (!item) {
           toast.error('Earning record not found.');
