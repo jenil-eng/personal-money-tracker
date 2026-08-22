@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Home, 
   ArrowDownCircle, 
   BarChart3, 
-  Target, 
   Grid, 
   Settings, 
   LogOut, 
@@ -20,7 +19,6 @@ import {
 export default function Sidebar() {
   const { logout, user, privacyMode, togglePrivacyMode } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -35,7 +33,6 @@ export default function Sidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: Home },
     { to: '/transactions/history', label: 'Transactions', icon: ArrowDownCircle },
     { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { to: '/budgets', label: 'Budgets', icon: Target },
     { to: '/categories', label: 'Categories', icon: Grid },
     { to: '/settings', label: 'Settings', icon: Settings },
   ];

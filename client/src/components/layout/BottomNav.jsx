@@ -4,7 +4,7 @@ import {
   Home, 
   ArrowDownCircle, 
   BarChart3, 
-  Target, 
+  Grid, 
   Plus
 } from 'lucide-react';
 
@@ -64,17 +64,17 @@ export default function BottomNav() {
         <span className="text-[10px] tracking-tight">Analytics</span>
       </NavLink>
 
-      {/* Budgets */}
+      {/* Categories */}
       <NavLink
-        to="/budgets"
+        to="/categories"
         className={({ isActive }) =>
           `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
-            isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
+            isActive ? 'text-amber-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
           }`
         }
       >
-        <Target className="w-5 h-5 mb-0.5" />
-        <span className="text-[10px] tracking-tight">Budgets</span>
+        <Grid className="w-5 h-5 mb-0.5" />
+        <span className="text-[10px] tracking-tight">Categories</span>
       </NavLink>
     </nav>
   );

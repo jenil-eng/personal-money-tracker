@@ -3,28 +3,21 @@ import { Link } from 'react-router-dom';
 import { getTransactionsApi, getEarningsApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
-  isThisMonth, 
   parseDDMMYYYY, 
   getCurrentMonthISO, 
   formatMonthLabel,
   ddmmYYYYtoISO
 } from '../utils/formatters';
 import { CategoryPill, getCategoryMeta } from '../utils/categoryUtils';
-import StatCard from '../components/common/StatCard';
 import { 
   PlusCircle, 
   ArrowDownCircle, 
   ArrowUpCircle, 
   Wallet, 
   TrendingUp, 
-  TrendingDown,
   PieChart as PieChartIcon,
   Clock,
   RefreshCw,
-  Zap,
-  Target,
-  PiggyBank,
-  Percent,
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
@@ -34,11 +27,7 @@ import {
   Area, 
   XAxis, 
   YAxis, 
-  Tooltip, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  Legend
+  Tooltip
 } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -48,9 +37,6 @@ export default function Dashboard() {
   const [earnings, setEarnings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Default monthly budget limit
-  const [monthlyBudget] = useState(15000);
 
   const fetchData = async (showToast = false) => {
     try {
@@ -79,7 +65,6 @@ export default function Dashboard() {
   const totalIncome = earnings.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   const totalExpenses = transactions.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   const totalSavings = totalIncome - totalExpenses;
-  const savingsRatePercent = totalIncome > 0 ? Math.max(0, Math.round((totalSavings / totalIncome) * 100)) : 0;
 
   // Current Month vs Previous Month Comparisons
   const now = new Date();
@@ -106,9 +91,6 @@ export default function Dashboard() {
   if (prevMonthExpenses > 0) {
     momPercentChange = Math.round(((currentMonthExpenses - prevMonthExpenses) / prevMonthExpenses) * 100);
   }
-
-  // Budget Progress
-  const budgetRatio = Math.min(Math.round((currentMonthExpenses / monthlyBudget) * 100), 100);
 
   // Top Spending Categories
   const categoryMap = {};
@@ -148,8 +130,7 @@ export default function Dashboard() {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-slate-800 rounded-lg" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="h-36 bg-slate-900/80 rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
           <div className="h-36 bg-slate-900/80 rounded-2xl" />
@@ -192,8 +173,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. FINTECH 4-METRIC STAT CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. FINTECH 3-METRIC STAT CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Balance */}
         <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-indigo-500">
           <div className="flex items-center justify-between">
@@ -235,104 +216,36 @@ export default function Dashboard() {
           </p>
           <p className="text-xs text-slate-400 mt-1">{transactions.length} total expense records</p>
         </div>
-
-        {/* Savings Rate % */}
-        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-amber-500">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Savings Rate</span>
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Percent className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="flex items-baseline space-x-2 mt-3">
-            <p className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-              {savingsRatePercent}%
-            </p>
-            <span className="text-xs text-slate-400">of total earnings</span>
-          </div>
-          <div className="w-full h-1.5 bg-slate-950 rounded-full mt-2 overflow-hidden border border-slate-800">
-            <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full" style={{ width: `${Math.min(savingsRatePercent, 100)}%` }} />
-          </div>
-        </div>
       </div>
 
-      {/* 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON & BUDGET TARGET */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Monthly Comparison Card */}
-        <div className="glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Monthly Spending Comparison</span>
-              <span className="text-[11px] font-semibold text-slate-400">{formatMonthLabel(currentMonthISO)}</span>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <span className="text-xs text-slate-400">Current Month Spending:</span>
-                <p className="text-xl font-extrabold text-white mt-0.5">{formatAmount(currentMonthExpenses)}</p>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <span className="text-slate-400">Previous Month ({formatMonthLabel(prevMonthISO)}):</span>
-                <span className="font-semibold text-slate-300">{formatAmount(prevMonthExpenses)}</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80">
-                <span className="text-xs text-slate-400 font-medium">Month-over-Month:</span>
-                <span className={`inline-flex items-center space-x-1 font-extrabold text-xs px-2 py-0.5 rounded-md ${
-                  momPercentChange <= 0 
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                }`}>
-                  {momPercentChange <= 0 ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
-                  <span>{momPercentChange > 0 ? `+${momPercentChange}%` : `${momPercentChange}%`}</span>
-                </span>
-              </div>
-            </div>
-          </div>
+      {/* 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON CARD */}
+      <div className="glass-panel rounded-2xl p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Monthly Spending Comparison</span>
+          <span className="text-[11px] font-semibold text-slate-400">{formatMonthLabel(currentMonthISO)}</span>
         </div>
 
-        {/* Budget Progress Card */}
-        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <Target className="w-5 h-5 text-indigo-400" />
-                <h3 className="font-bold text-white text-base">Monthly Spending Limit Progress</h3>
-              </div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-                budgetRatio > 90 
-                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' 
-                  : budgetRatio > 70 
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
-                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-              }`}>
-                {budgetRatio > 90 ? 'Near Limit' : budgetRatio > 70 ? 'Moderate' : 'Healthy'} ({budgetRatio}%)
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-400 mb-4">
-              Spent <strong className="text-slate-200">{formatAmount(currentMonthExpenses)}</strong> of <strong className="text-slate-200">{formatAmount(monthlyBudget)}</strong> monthly budget target.
-            </p>
-
-            {/* Progress Bar */}
-            <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
-              <div 
-                className={`h-full rounded-full transition-all duration-500 ${
-                  budgetRatio > 90 
-                    ? 'bg-gradient-to-r from-rose-600 to-red-500' 
-                    : budgetRatio > 70 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
-                    : 'bg-gradient-to-r from-indigo-500 to-emerald-400'
-                }`}
-                style={{ width: `${budgetRatio}%` }}
-              />
-            </div>
+            <span className="text-xs text-slate-400">Current Month Spending:</span>
+            <p className="text-xl font-extrabold text-white mt-0.5">{formatAmount(currentMonthExpenses)}</p>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Remaining Capacity: <strong className="text-emerald-400">{formatAmount(Math.max(0, monthlyBudget - currentMonthExpenses))}</strong></span>
-            <Link to="/budgets" className="text-indigo-400 hover:underline font-semibold">Manage Budgets →</Link>
+          <div>
+            <span className="text-xs text-slate-400">Previous Month ({formatMonthLabel(prevMonthISO)}):</span>
+            <p className="text-xl font-semibold text-slate-300 mt-0.5">{formatAmount(prevMonthExpenses)}</p>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+            <span className="text-xs text-slate-400 font-medium">Month-over-Month Change:</span>
+            <span className={`inline-flex items-center space-x-1 font-extrabold text-xs px-2.5 py-1 rounded-md ${
+              momPercentChange <= 0 
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+            }`}>
+              {momPercentChange <= 0 ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+              <span>{momPercentChange > 0 ? `+${momPercentChange}%` : `${momPercentChange}%`}</span>
+            </span>
           </div>
         </div>
       </div>
