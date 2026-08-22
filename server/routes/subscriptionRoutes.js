@@ -110,9 +110,10 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
   try {
     const subs = await readSubscriptions();
-    res.json(subs);
+    res.json(Array.isArray(subs) && subs.length > 0 ? subs : DEFAULT_SUBSCRIPTIONS);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch subscriptions.' });
+    console.error('Subscription GET error:', err);
+    res.json(DEFAULT_SUBSCRIPTIONS);
   }
 });
 

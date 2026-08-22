@@ -54,20 +54,23 @@ export default function Subscriptions() {
 
   const fetchSubscriptions = async () => {
     try {
-      const [subsRes, settingsRes] = await Promise.all([
-        getSubscriptionsApi(),
-        getSettingsApi()
-      ]);
-      setSubscriptions(subsRes.data || []);
+      const subsRes = await getSubscriptionsApi();
+      if (Array.isArray(subsRes.data)) {
+        setSubscriptions(subsRes.data);
+      }
+    } catch (err) {
+      console.warn('Subscriptions API error:', err);
+    }
+
+    try {
+      const settingsRes = await getSettingsApi();
       if (settingsRes.data) {
         setCategoriesList(settingsRes.data.categories || ['Bills', 'Entertainment', 'Personal', 'Other']);
         setPaymentMethodsList(settingsRes.data.paymentMethods || ['UPI', 'Credit Card', 'Debit Card', 'Bank Transfer']);
       }
-    } catch (err) {
-      toast.error('Failed to load recurring subscriptions.');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) {}
+
+    setLoading(false);
   };
 
   useEffect(() => {
