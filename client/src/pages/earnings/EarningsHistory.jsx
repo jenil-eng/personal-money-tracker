@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getEarningsApi, deleteEarningApi, getSettingsApi } from '../../services/api';
-import { formatINR, parseDDMMYYYY } from '../../utils/formatters';
+import { useAuth } from '../../context/AuthContext';
+import { parseDDMMYYYY } from '../../utils/formatters';
+import { SourcePill } from '../../utils/categoryUtils';
 import Modal from '../../components/common/Modal';
 import { 
   Search, 
@@ -11,12 +13,14 @@ import {
   Trash2, 
   PlusCircle, 
   ArrowUpDown, 
-  AlertTriangle
+  AlertTriangle,
+  Landmark
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function EarningsHistory() {
   const navigate = useNavigate();
+  const { formatAmount } = useAuth();
 
   const [earnings, setEarnings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,9 +69,11 @@ export default function EarningsHistory() {
 
   // Filter & Search
   const filteredEarnings = earnings.filter(item => {
+    const q = searchQuery.toLowerCase();
     const matchSearch = 
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.source.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.description || '').toLowerCase().includes(q) ||
+      (item.source || '').toLowerCase().includes(q) ||
+      (item.notes || '').toLowerCase().includes(q);
     if (!matchSearch) return false;
 
     if (filterSource && item.source !== filterSource) return false;
@@ -134,21 +140,26 @@ export default function EarningsHistory() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Earnings History</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-2">
+            <span>Earnings History</span>
+            <span className="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+              {filteredEarnings.length} Incomes
+            </span>
+          </h1>
           <p className="text-sm text-slate-400">All recorded income/earnings entries</p>
         </div>
 
         <Link
           to="/earnings/add"
-          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition shadow-lg shadow-emerald-600/20 self-start sm:self-auto"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shadow-emerald-600/25 self-start sm:self-auto"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>+ Add Earning</span>
+          <span>+ Add Income</span>
         </Link>
       </div>
 
       {/* SEARCH AND FILTERS */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
+      <div className="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* SEARCH */}
           <div className="relative">
@@ -157,9 +168,17 @@ export default function EarningsHistory() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search description or source..."
+              placeholder="Search description, notes or source..."
               className="w-full bg-slate-950/70 border border-slate-800 focus:border-emerald-500 rounded-xl py-2.5 pl-9 pr-4 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
             />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* SOURCE FILTER */}
@@ -226,19 +245,19 @@ export default function EarningsHistory() {
       </div>
 
       {/* TABLE */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+      <div className="glass-panel rounded-2xl shadow-xl overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-400">Loading earnings from Google Sheets...</div>
         ) : paginatedEarnings.length === 0 ? (
           <div className="p-12 text-center space-y-4">
+            <Landmark className="w-12 h-12 text-slate-600 mx-auto" />
             <p className="text-slate-400 font-medium">No earnings recorded yet.</p>
-            <Link
-              to="/earnings/add"
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition"
+            <button
+              onClick={handleClearFilters}
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl transition"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Add Earning</span>
-            </Link>
+              Reset Filters
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -259,12 +278,10 @@ export default function EarningsHistory() {
                     <td className="py-3.5 px-4 font-mono text-xs text-slate-400 whitespace-nowrap">{earn.date}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-100">{earn.description}</td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {earn.source}
-                      </span>
+                      <SourcePill source={earn.source} />
                     </td>
                     <td className="py-3.5 px-4 font-bold text-emerald-400 whitespace-nowrap">
-                      {formatINR(earn.amount)}
+                      {formatAmount(earn.amount)}
                     </td>
                     <td className="py-3.5 px-4 text-xs text-slate-500 max-w-xs truncate hidden md:table-cell">
                       {earn.notes || '-'}
@@ -359,11 +376,11 @@ export default function EarningsHistory() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Source</span>
-                <p className="text-sm font-semibold text-emerald-400">{viewItem.source}</p>
+                <div className="mt-1"><SourcePill source={viewItem.source} /></div>
               </div>
               <div>
                 <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Amount</span>
-                <p className="text-base font-bold text-emerald-400">{formatINR(viewItem.amount)}</p>
+                <p className="text-base font-bold text-emerald-400">{formatAmount(viewItem.amount)}</p>
               </div>
             </div>
             <div>
@@ -395,7 +412,7 @@ export default function EarningsHistory() {
 
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm space-y-1 text-slate-300">
               <p><span className="text-slate-500">Description:</span> <strong className="text-white">{deleteItem.description}</strong></p>
-              <p><span className="text-slate-500">Amount:</span> <strong className="text-emerald-400">{formatINR(deleteItem.amount)}</strong></p>
+              <p><span className="text-slate-500">Amount:</span> <strong className="text-emerald-400">{formatAmount(deleteItem.amount)}</strong></p>
               <p><span className="text-slate-500">Date:</span> {deleteItem.date}</p>
             </div>
 

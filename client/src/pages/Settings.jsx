@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSettingsApi, updateSettingsApi, getTransactionsApi, getEarningsApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { CategoryPill, SourcePill } from '../utils/categoryUtils';
 import Modal from '../components/common/Modal';
 import { 
   Settings as SettingsIcon, 
@@ -12,11 +14,16 @@ import {
   Tag, 
   Sparkles, 
   CreditCard,
-  Save
+  Eye,
+  EyeOff,
+  Shield,
+  Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
+  const { privacyMode, togglePrivacyMode } = useAuth();
+  
   const [categories, setCategories] = useState([]);
   const [sources, setSources] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -190,25 +197,60 @@ export default function Settings() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-3">
           <SettingsIcon className="w-8 h-8 text-indigo-400" />
-          <span>Settings</span>
+          <span>Settings & Preferences</span>
         </h1>
-        <p className="text-sm text-slate-400">Manage dynamic dropdown options stored in Google Sheets LISTS sheet</p>
+        <p className="text-sm text-slate-400">Manage categories, payment options, and privacy controls</p>
       </div>
 
+      {/* PRIVACY & DISPLAY CARD */}
+      <div className="glass-panel rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
+          <Shield className="w-5 h-5 text-indigo-400" />
+          <div>
+            <h2 className="text-base font-bold text-white">Privacy & Security Options</h2>
+            <p className="text-xs text-slate-400">Control sensitive financial data visibility in public places</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-slate-950/60 rounded-xl border border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className={`p-2.5 rounded-xl ${privacyMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-400'}`}>
+              {privacyMode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Privacy Mode (Mask Amounts)</p>
+              <p className="text-xs text-slate-400">Mask all monetary values with `₹••••` when enabled</p>
+            </div>
+          </div>
+
+          <button
+            onClick={togglePrivacyMode}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition border ${
+              privacyMode 
+                ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            {privacyMode ? 'Enabled' : 'Disabled'}
+          </button>
+        </div>
+      </div>
+
+      {/* CATEGORY & SOURCE MANAGEMENT GRIDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* SECTION 1: TRANSACTION CATEGORIES */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+        <div className="glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">
                 <Tag className="w-4 h-4 text-rose-500" />
-                <span>Transaction Categories</span>
+                <span>Categories</span>
               </h2>
               <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">{categories.length}</span>
             </div>
@@ -237,7 +279,7 @@ export default function Settings() {
                       </div>
                     ) : (
                       <>
-                        <span className="text-sm font-medium text-slate-200">{cat}</span>
+                        <CategoryPill category={cat} />
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => setEditingItem({ type: 'categories', index: idx, oldValue: cat, newValue: cat })}
@@ -300,7 +342,7 @@ export default function Settings() {
         </div>
 
         {/* SECTION 2: EARNING SOURCES */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+        <div className="glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">
@@ -334,7 +376,7 @@ export default function Settings() {
                       </div>
                     ) : (
                       <>
-                        <span className="text-sm font-medium text-slate-200">{src}</span>
+                        <SourcePill source={src} />
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => setEditingItem({ type: 'sources', index: idx, oldValue: src, newValue: src })}
@@ -397,7 +439,7 @@ export default function Settings() {
         </div>
 
         {/* SECTION 3: PAYMENT METHODS */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+        <div className="glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">

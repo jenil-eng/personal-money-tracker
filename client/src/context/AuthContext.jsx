@@ -7,6 +7,23 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('pmt_token'));
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('pmt_user') || 'null'));
   const [loading, setLoading] = useState(true);
+  const [privacyMode, setPrivacyMode] = useState(() => {
+    return localStorage.getItem('pmt_privacy') === 'true';
+  });
+
+  const togglePrivacyMode = () => {
+    setPrivacyMode(prev => {
+      const next = !prev;
+      localStorage.setItem('pmt_privacy', String(next));
+      return next;
+    });
+  };
+
+  const formatAmount = (amount, currencySymbol = '₹') => {
+    if (privacyMode) return `${currencySymbol}••••`;
+    const num = Number(amount) || 0;
+    return `${currencySymbol}${num.toLocaleString('en-IN')}`;
+  };
 
   // Auto login helper
   const autoLogin = async () => {
@@ -35,7 +52,6 @@ export const AuthProvider = ({ children }) => {
           await autoLogin();
         }
       } else {
-        // If no token exists, automatically log in as private admin
         await autoLogin();
       }
       setLoading(false);
@@ -62,7 +78,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, loading, login, logout, autoLogin }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      isAuthenticated: !!token, 
+      loading, 
+      login, 
+      logout, 
+      autoLogin,
+      privacyMode,
+      togglePrivacyMode,
+      formatAmount
+    }}>
       {children}
     </AuthContext.Provider>
   );
