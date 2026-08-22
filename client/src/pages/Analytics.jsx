@@ -73,6 +73,24 @@ export default function Analytics() {
   // Daily Spending Average (over last 30 days)
   const dailySpendingAvg = Math.round(totalExpenses / 30);
 
+  // Net Cash Flow Calculation
+  const netCashFlow = totalIncome - totalExpenses;
+  const isPositiveCashFlow = netCashFlow >= 0;
+
+  // Daily Expense Timeline (Day-by-day trend & peak spikes)
+  const dailyTimelineMap = {};
+  transactions.forEach(t => {
+    const dIso = ddmmYYYYtoISO(t.date); // '2026-08-22'
+    if (!dailyTimelineMap[dIso]) {
+      dailyTimelineMap[dIso] = { dateIso: dIso, dateLabel: t.date.slice(0, 5), Spent: 0, count: 0 };
+    }
+    dailyTimelineMap[dIso].Spent += Number(t.amount) || 0;
+    dailyTimelineMap[dIso].count += 1;
+  });
+
+  const dailyTimelineData = Object.values(dailyTimelineMap)
+    .sort((a, b) => a.dateIso.localeCompare(b.dateIso));
+
   // Category Breakdown Data
   const categoryMap = {};
   transactions.forEach(t => {
@@ -88,7 +106,7 @@ export default function Analytics() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  // Monthly Spending Trend (e.g. Mar, Apr, May, Jun, Jul, Aug ₹24K-₹40K)
+  // Monthly Spending Trend
   const monthlyTrendMap = {};
   transactions.forEach(t => {
     const monthKey = ddmmYYYYtoISO(t.date).slice(0, 7); // '2026-08'
@@ -187,54 +205,56 @@ export default function Analytics() {
           </p>
         </div>
 
-        {/* Overall Savings Rate */}
-        <div className="glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 border-l-emerald-500">
+        {/* Net Cash Flow (Replaced Overall Savings Rate) */}
+        <div className={`glass-panel glass-panel-hover rounded-2xl p-5 shadow-xl border-l-4 ${isPositiveCashFlow ? 'border-l-emerald-500' : 'border-l-rose-500'}`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Overall Savings Rate</span>
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Zap className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Net Cash Flow</span>
+            <div className={`p-2.5 rounded-xl border ${isPositiveCashFlow ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+              <Wallet className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-3 tracking-tight">
-            {savingsRate}%
+          <p className={`text-2xl sm:text-3xl font-black mt-3 tracking-tight ${isPositiveCashFlow ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {isPositiveCashFlow ? `+ ${formatAmount(netCashFlow)}` : `- ${formatAmount(Math.abs(netCashFlow))}`}
           </p>
-          <p className="text-xs text-slate-400 mt-1">Capital retention ratio</p>
+          <p className="text-xs text-slate-400 mt-1">
+            {isPositiveCashFlow ? 'Surplus (Income > Expenses)' : 'Deficit (Expenses > Income)'}
+          </p>
         </div>
       </div>
 
-      {/* 2. MONTHLY SPENDING TREND (₹24K-₹40K VISUALIZATION) */}
+      {/* 2. DAILY EXPENSE TIMELINE (Replaced Artificial Scale Monthly Trend) */}
       <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-white flex items-center space-x-2">
               <TrendingUp className="w-5 h-5 text-indigo-400" />
-              <span>Monthly Spending Trend (₹24K – ₹40K Scale)</span>
+              <span>Daily Expense Timeline & Peak Spikes</span>
             </h2>
-            <p className="text-xs text-slate-400">Historical monthly expense patterns over time</p>
+            <p className="text-xs text-slate-400">Day-by-day spending pattern and expense velocity over time</p>
           </div>
         </div>
 
-        {monthlyTrendData.length === 0 ? (
+        {dailyTimelineData.length === 0 ? (
           <div className="h-64 flex items-center justify-center text-slate-500 text-sm">
-            No monthly data recorded yet.
+            No daily transaction data recorded yet.
           </div>
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTrendData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+              <AreaChart data={dailyTimelineData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="spendingTrend" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="dailyTimelineGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="label" stroke="#64748b" fontSize={11} tickLine={false} />
+                <XAxis dataKey="dateLabel" stroke="#64748b" fontSize={11} tickLine={false} />
                 <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem', color: '#f8fafc' }}
-                  formatter={(val) => [formatAmount(val), 'Spent']}
+                  formatter={(val, name, item) => [formatAmount(val), `Spent (${item.payload.count} txns)`]}
                 />
-                <Area type="monotone" dataKey="Spent" stroke="#6366f1" fillOpacity={1} fill="url(#spendingTrend)" strokeWidth={3} />
+                <Area type="monotone" dataKey="Spent" stroke="#6366f1" fillOpacity={1} fill="url(#dailyTimelineGrad)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
