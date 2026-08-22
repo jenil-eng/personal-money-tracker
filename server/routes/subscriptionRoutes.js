@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const mockStore = require('../services/mockStoreService');
+const { getGoogleSheetsClient } = require('../config/googleSheets');
 const { addTransaction } = require('../services/googleSheetsService');
-const authMiddleware = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const { parseAmount } = require('../utils/formatters');
 
-// Initial seed subscriptions if none exist
+// Initial seed subscriptions
 const DEFAULT_SUBSCRIPTIONS = [
   {
-    id: 1,
+    id: 2,
+    rowNumber: 2,
     name: 'Netflix Premium (4K)',
     category: 'Entertainment',
     amount: 649,
@@ -18,7 +21,8 @@ const DEFAULT_SUBSCRIPTIONS = [
     notes: 'Family 4K UHD plan'
   },
   {
-    id: 2,
+    id: 3,
+    rowNumber: 3,
     name: 'House Rent',
     category: 'Bills',
     amount: 8500,
@@ -29,7 +33,8 @@ const DEFAULT_SUBSCRIPTIONS = [
     notes: 'Hostel / Room rent'
   },
   {
-    id: 3,
+    id: 4,
+    rowNumber: 4,
     name: 'JioFiber Broadband',
     category: 'Bills',
     amount: 1179,
@@ -40,7 +45,8 @@ const DEFAULT_SUBSCRIPTIONS = [
     notes: 'High-speed WiFi'
   },
   {
-    id: 4,
+    id: 5,
+    rowNumber: 5,
     name: 'Spotify Student',
     category: 'Entertainment',
     amount: 59,
@@ -52,22 +58,58 @@ const DEFAULT_SUBSCRIPTIONS = [
   }
 ];
 
-function getSubscriptionsFromStore() {
-  const store = mockStore.readStore();
-  if (!store.subscriptions) {
-    store.subscriptions = DEFAULT_SUBSCRIPTIONS;
-    mockStore.writeStore(store);
+// Helper: Read Subscriptions from Google Sheets or Fallback
+async function readSubscriptions() {
+  const client = getGoogleSheetsClient();
+  if (!client) {
+    const store = mockStore.readStore();
+    if (!store.subscriptions) {
+      store.subscriptions = DEFAULT_SUBSCRIPTIONS;
+      mockStore.writeStore(store);
+    }
+    return store.subscriptions;
   }
-  return store.subscriptions;
+
+  const { sheets, spreadsheetId } = client;
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'SUBSCRIPTIONS!A2:H',
+      valueRenderOption: 'FORMATTED_VALUE'
+    });
+
+    const rows = response.data.values || [];
+    if (rows.length === 0) {
+      const store = mockStore.readStore();
+      return store.subscriptions || DEFAULT_SUBSCRIPTIONS;
+    }
+
+    return rows.map((row, index) => ({
+      id: index + 2,
+      rowNumber: index + 2,
+      name: row[0] || '',
+      category: row[1] || 'Bills',
+      amount: parseAmount(row[2]),
+      billingCycle: row[3] || 'monthly',
+      dueDay: Number(row[4]) || 1,
+      paymentMethod: row[5] || 'UPI',
+      notes: row[6] || '',
+      status: row[7] || 'active'
+    }));
+  } catch (error) {
+    console.warn('Google Sheets SUBSCRIPTIONS read error, using store fallback:', error.message);
+    const store = mockStore.readStore();
+    return store.subscriptions || DEFAULT_SUBSCRIPTIONS;
+  }
 }
 
-// All endpoints require authentication
-router.use(authMiddleware);
+// All routes require JWT Authentication middleware
+router.use(authenticateToken);
 
 // GET /api/subscriptions
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const subs = getSubscriptionsFromStore();
+    const subs = await readSubscriptions();
     res.json(subs);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch subscriptions.' });
@@ -75,18 +117,36 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/subscriptions
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, category, amount, billingCycle, dueDay, paymentMethod, notes } = req.body;
     if (!name || !amount) {
       return res.status(400).json({ message: 'Subscription name and amount are required.' });
     }
 
+    const client = getGoogleSheetsClient();
+    if (client) {
+      const { sheets, spreadsheetId } = client;
+      try {
+        await sheets.spreadsheets.values.append({
+          spreadsheetId,
+          range: 'SUBSCRIPTIONS!A2:H',
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[name.trim(), category || 'Bills', Number(amount) || 0, billingCycle || 'monthly', Number(dueDay) || 1, paymentMethod || 'UPI', notes || '', 'active']]
+          }
+        });
+      } catch (sheetsErr) {
+        console.warn('Google Sheets subscription append warning:', sheetsErr.message);
+      }
+    }
+
+    // Update local store
     const store = mockStore.readStore();
     if (!store.subscriptions) store.subscriptions = DEFAULT_SUBSCRIPTIONS;
-
     const newSub = {
       id: Date.now(),
+      rowNumber: store.subscriptions.length + 2,
       name: name.trim(),
       category: category || 'Bills',
       amount: Number(amount) || 0,
@@ -107,19 +167,19 @@ router.post('/', (req, res) => {
 });
 
 // PUT /api/subscriptions/:id
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const targetId = Number(req.params.id);
     const store = mockStore.readStore();
     if (!store.subscriptions) store.subscriptions = DEFAULT_SUBSCRIPTIONS;
 
-    const index = store.subscriptions.findIndex(s => Number(s.id) === targetId);
+    const index = store.subscriptions.findIndex(s => Number(s.id) === targetId || Number(s.rowNumber) === targetId);
     if (index === -1) {
       return res.status(404).json({ message: 'Subscription not found.' });
     }
 
     const { name, category, amount, billingCycle, dueDay, paymentMethod, status, notes } = req.body;
-    store.subscriptions[index] = {
+    const updatedSub = {
       ...store.subscriptions[index],
       name: name !== undefined ? name.trim() : store.subscriptions[index].name,
       category: category !== undefined ? category : store.subscriptions[index].category,
@@ -131,27 +191,59 @@ router.put('/:id', (req, res) => {
       notes: notes !== undefined ? notes : store.subscriptions[index].notes
     };
 
+    store.subscriptions[index] = updatedSub;
     mockStore.writeStore(store);
-    res.json(store.subscriptions[index]);
+
+    // Update Google Sheets row if targetId corresponds to a rowNumber
+    const client = getGoogleSheetsClient();
+    if (client) {
+      const { sheets, spreadsheetId } = client;
+      const rowNum = updatedSub.rowNumber || targetId;
+      try {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `SUBSCRIPTIONS!A${rowNum}:H${rowNum}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[updatedSub.name, updatedSub.category, updatedSub.amount, updatedSub.billingCycle, updatedSub.dueDay, updatedSub.paymentMethod, updatedSub.notes, updatedSub.status]]
+          }
+        });
+      } catch (sheetsErr) {
+        console.warn('Google Sheets subscription update warning:', sheetsErr.message);
+      }
+    }
+
+    res.json(updatedSub);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update subscription.' });
   }
 });
 
 // DELETE /api/subscriptions/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const targetId = Number(req.params.id);
     const store = mockStore.readStore();
     if (!store.subscriptions) store.subscriptions = DEFAULT_SUBSCRIPTIONS;
 
-    const index = store.subscriptions.findIndex(s => Number(s.id) === targetId);
-    if (index === -1) {
-      return res.status(404).json({ message: 'Subscription not found.' });
+    const index = store.subscriptions.findIndex(s => Number(s.id) === targetId || Number(s.rowNumber) === targetId);
+    if (index !== -1) {
+      store.subscriptions.splice(index, 1);
+      mockStore.writeStore(store);
     }
 
-    store.subscriptions.splice(index, 1);
-    mockStore.writeStore(store);
+    const client = getGoogleSheetsClient();
+    if (client) {
+      const { sheets, spreadsheetId } = client;
+      try {
+        await sheets.spreadsheets.values.clear({
+          spreadsheetId,
+          range: `SUBSCRIPTIONS!A${targetId}:H${targetId}`
+        });
+      } catch (sheetsErr) {
+        console.warn('Google Sheets subscription clear warning:', sheetsErr.message);
+      }
+    }
 
     res.json({ success: true, message: 'Subscription deleted successfully.' });
   } catch (err) {
@@ -163,10 +255,9 @@ router.delete('/:id', (req, res) => {
 router.post('/:id/pay', async (req, res) => {
   try {
     const targetId = Number(req.params.id);
-    const store = mockStore.readStore();
-    if (!store.subscriptions) store.subscriptions = DEFAULT_SUBSCRIPTIONS;
+    const subs = await readSubscriptions();
+    const sub = subs.find(s => Number(s.id) === targetId || Number(s.rowNumber) === targetId);
 
-    const sub = store.subscriptions.find(s => Number(s.id) === targetId);
     if (!sub) {
       return res.status(404).json({ message: 'Subscription not found.' });
     }
@@ -178,7 +269,7 @@ router.post('/:id/pay', async (req, res) => {
     const year = now.getFullYear();
     const dateFormatted = `${day}-${month}-${year}`;
 
-    // Add transaction to Google Sheets / Store
+    // Add transaction to Google Sheets & Store
     const newTxData = {
       date: dateFormatted,
       description: `Bill Payment: ${sub.name}`,
@@ -192,8 +283,14 @@ router.post('/:id/pay', async (req, res) => {
     await addTransaction(newTxData);
 
     // Update lastPaidDate in subscription record
-    sub.lastPaidDate = dateFormatted;
-    mockStore.writeStore(store);
+    const store = mockStore.readStore();
+    if (store.subscriptions) {
+      const sIndex = store.subscriptions.findIndex(s => Number(s.id) === targetId || Number(s.rowNumber) === targetId);
+      if (sIndex !== -1) {
+        store.subscriptions[sIndex].lastPaidDate = dateFormatted;
+        mockStore.writeStore(store);
+      }
+    }
 
     res.json({
       success: true,
