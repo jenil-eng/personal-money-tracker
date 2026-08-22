@@ -5,8 +5,8 @@ import { Wallet, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@student.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -32,7 +32,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('JWT Authenticated! Welcome back.');
+      toast.success('Authenticated! Welcome back.');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password. Please try again.';
@@ -56,17 +56,17 @@ export default function Login() {
             <Wallet className="w-8 h-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Personal Money Tracker</h1>
-          <p className="mt-2 text-sm text-slate-400">Private Student Finance Dashboard</p>
+          <p className="mt-2 text-sm text-slate-400">Private Finance Dashboard</p>
 
           <div className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>JWT Token Authentication</span>
+            <span>Private Access Only</span>
           </div>
         </div>
 
         {/* Login Form Card */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-          <h2 className="text-xl font-bold text-slate-100 mb-6">Secure Sign In</h2>
+          <h2 className="text-xl font-bold text-slate-100 mb-6">Private Sign In</h2>
 
           {error && (
             <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start space-x-3 text-rose-400 text-sm">
@@ -86,7 +86,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@student.com"
+                  placeholder="Enter email address..."
                   required
                   className="w-full bg-slate-950/60 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
                 />
@@ -118,20 +118,20 @@ export default function Login() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  <span>Verifying JWT...</span>
+                  <span>Authenticating...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In with JWT</span>
+                  <span>Sign In to Dashboard</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-800/80 text-center space-y-2">
-            <p className="text-xs text-slate-400 font-medium">
-              Default Credentials: <code className="text-indigo-300 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">admin@student.com</code> / <code className="text-indigo-300 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">password123</code>
+          <div className="mt-6 pt-6 border-t border-slate-800/80 text-center">
+            <p className="text-xs text-slate-500">
+              Authorized access only. Protected by JWT token authentication.
             </p>
           </div>
         </div>
