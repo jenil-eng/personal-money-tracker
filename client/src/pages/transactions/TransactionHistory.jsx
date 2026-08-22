@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getTransactionsApi, getEarningsApi, deleteTransactionApi, deleteEarningApi, getSettingsApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { parseDDMMYYYY, formatMonthLabel, ddmmYYYYtoISO } from '../../utils/formatters';
-import { CategoryPill, SubcategoryPill, SourcePill, HIERARCHICAL_CATEGORIES, getSubcategoriesForCategory } from '../../utils/categoryUtils';
+import { CategoryPill, SubcategoryPill, SourcePill, HIERARCHICAL_CATEGORIES, getSubcategoriesForCategory, isCategoryMatch } from '../../utils/categoryUtils';
 import Modal from '../../components/common/Modal';
 import { 
   Search, 
@@ -116,7 +116,7 @@ export default function TransactionHistory() {
     if (!matchSearch) return false;
 
     // Category Filter
-    if (filterCategory && item.category !== filterCategory) return false;
+    if (filterCategory && !isCategoryMatch(item.category, filterCategory)) return false;
 
     // Subcategory Filter
     if (filterSubcategory && item.subcategory !== filterSubcategory) return false;

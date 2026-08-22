@@ -225,6 +225,40 @@ export function getSubcategoriesForCategory(categoryName) {
   return ['General', 'Miscellaneous', 'Other'];
 }
 
+export function isCategoryMatch(itemCategory, filterCategory) {
+  if (!filterCategory) return true;
+  if (!itemCategory) return false;
+
+  const itemCat = String(itemCategory).trim().toLowerCase();
+  const filterCat = String(filterCategory).trim().toLowerCase();
+
+  if (itemCat === filterCat) return true;
+
+  // Food / Food & Dining
+  if ((itemCat.includes('food') || itemCat.includes('din')) && (filterCat.includes('food') || filterCat.includes('din'))) {
+    return true;
+  }
+
+  // Travel / Transport
+  if ((itemCat.includes('travel') || itemCat.includes('transport') || itemCat.includes('vehic')) && 
+      (filterCat.includes('travel') || filterCat.includes('transport') || filterCat.includes('vehic'))) {
+    return true;
+  }
+
+  // Bills / Bills & Utilities
+  if ((itemCat.includes('bill') || itemCat.includes('util')) && (filterCat.includes('bill') || filterCat.includes('util'))) {
+    return true;
+  }
+
+  // Personal / Health / Education
+  if ((itemCat.includes('person') || itemCat.includes('health') || itemCat.includes('educat')) &&
+      (filterCat.includes('person') || filterCat.includes('health') || filterCat.includes('educat'))) {
+    return true;
+  }
+
+  return itemCat.includes(filterCat) || filterCat.includes(itemCat);
+}
+
 export function SubcategoryPill({ subcategory }) {
   const Icon = SUBCATEGORY_META[subcategory] || Tag;
   return (
