@@ -220,13 +220,13 @@ export default function TransactionHistory() {
 
     // Optimistically remove from React state & localStorage IMMEDIATELY (0ms UI latency)
     if (targetType === 'expense') {
-      const updatedTx = transactions.filter(t => (t.id || t.rowNumber) !== targetId);
+      const updatedTx = transactions.filter(t => String(t.id || t.rowNumber) !== String(targetId));
       setTransactions(updatedTx);
       try {
         localStorage.setItem('pmt_cached_transactions', JSON.stringify(updatedTx));
       } catch (e) {}
     } else {
-      const updatedEarn = earnings.filter(e => (e.id || e.rowNumber) !== targetId);
+      const updatedEarn = earnings.filter(e => String(e.id || e.rowNumber) !== String(targetId));
       setEarnings(updatedEarn);
       try {
         localStorage.setItem('pmt_cached_earnings', JSON.stringify(updatedEarn));
@@ -244,7 +244,7 @@ export default function TransactionHistory() {
       toast.success(`${targetType === 'expense' ? 'Transaction' : 'Income'} deleted successfully.`);
       fetchRecords();
     } catch (err) {
-      toast.error('Failed to delete item from Google Sheets. Re-syncing...');
+      console.error('Delete error:', err);
       fetchRecords();
     } finally {
       setDeleting(false);

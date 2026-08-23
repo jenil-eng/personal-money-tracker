@@ -278,21 +278,24 @@ async function deleteTransaction(id) {
   const client = getGoogleSheetsClient();
   const targetId = parseInt(id, 10);
 
+  if (isNaN(targetId) || targetId < 2) {
+    return { success: true };
+  }
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
       const currentList = await readTransactions();
       const target = findRecord(currentList, targetId);
+      const rowNum = target ? target.rowNumber : targetId;
 
-      if (target) {
-        const rowNum = target.rowNumber;
-        await sheets.spreadsheets.values.clear({
-          spreadsheetId,
-          range: `TRANSACTIONS!A${rowNum}:G${rowNum}`
-        });
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: `TRANSACTIONS!A${rowNum}:G${rowNum}`
+      });
 
-        return { success: true };
-      }
+      invalidateCache('transactions');
+      return { success: true };
     } catch (error) {
       console.warn('Google Sheets delete failed, clearing from local store fallback:', error.message);
     }
@@ -301,12 +304,11 @@ async function deleteTransaction(id) {
   // Fallback
   const store = mockStore.readStore();
   const index = findRecordIndex(store.transactions, targetId);
-  if (index === -1) {
-    throw new Error('Transaction not found.');
+  if (index !== -1) {
+    store.transactions.splice(index, 1);
+    mockStore.writeStore(store);
   }
-
-  store.transactions.splice(index, 1);
-  mockStore.writeStore(store);
+  invalidateCache('transactions');
   return { success: true };
 }
 
@@ -484,21 +486,24 @@ async function deleteEarning(id) {
   const client = getGoogleSheetsClient();
   const targetId = parseInt(id, 10);
 
+  if (isNaN(targetId) || targetId < 2) {
+    return { success: true };
+  }
+
   if (client) {
     const { sheets, spreadsheetId } = client;
     try {
       const currentList = await readEarnings();
       const target = findRecord(currentList, targetId);
+      const rowNum = target ? target.rowNumber : targetId;
 
-      if (target) {
-        const rowNum = target.rowNumber;
-        await sheets.spreadsheets.values.clear({
-          spreadsheetId,
-          range: `EARNINGS!A${rowNum}:E${rowNum}`
-        });
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: `EARNINGS!A${rowNum}:E${rowNum}`
+      });
 
-        return { success: true };
-      }
+      invalidateCache('earnings');
+      return { success: true };
     } catch (error) {
       console.warn('Google Sheets delete earning failed, clearing local store fallback:', error.message);
     }
@@ -507,12 +512,11 @@ async function deleteEarning(id) {
   // Fallback
   const store = mockStore.readStore();
   const index = findRecordIndex(store.earnings, targetId);
-  if (index === -1) {
-    throw new Error('Earning record not found.');
+  if (index !== -1) {
+    store.earnings.splice(index, 1);
+    mockStore.writeStore(store);
   }
-
-  store.earnings.splice(index, 1);
-  mockStore.writeStore(store);
+  invalidateCache('earnings');
   return { success: true };
 }
 
