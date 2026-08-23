@@ -68,14 +68,14 @@ export default function BottomNav() {
       {/* Main Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/80 px-2 pt-1.5 flex items-start justify-around shadow-2xl w-full max-w-full"
-        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 1.25rem))' }}
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/80 px-2 h-[50px] flex items-center justify-around shadow-2xl w-full max-w-full box-content"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* 1. Dashboard */}
         <NavLink
           to="/dashboard"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+            `flex flex-col items-center justify-center w-14 h-full transition ${
               isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -88,7 +88,7 @@ export default function BottomNav() {
         <NavLink
           to="/transactions/history"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+            `flex flex-col items-center justify-center w-14 h-full transition ${
               isActive ? 'text-rose-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -98,11 +98,11 @@ export default function BottomNav() {
         </NavLink>
 
         {/* 3. Docked Floating Elevated Center "+ Add" Slot */}
-        <div className="relative flex flex-col items-center justify-start w-14 pt-0.5">
+        <div className="relative flex flex-col items-center justify-center w-14 h-full">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
             type="button"
-            className="absolute -top-4 flex flex-col items-center focus:outline-none group"
+            className="absolute -top-5 flex flex-col items-center focus:outline-none group"
             aria-label="Add Action"
           >
             <div className={`p-3.5 rounded-full shadow-xl border-4 border-slate-950 transition-transform duration-200 ${
@@ -120,7 +120,7 @@ export default function BottomNav() {
         <NavLink
           to="/earnings"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+            `flex flex-col items-center justify-center w-14 h-full transition ${
               isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -133,7 +133,7 @@ export default function BottomNav() {
         <NavLink
           to="/analytics"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 py-1 rounded-xl transition ${
+            `flex flex-col items-center justify-center w-14 h-full transition ${
               isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
