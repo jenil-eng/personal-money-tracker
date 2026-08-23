@@ -44,10 +44,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Header */}
-      <header 
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between w-full max-w-full"
-        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
-      >
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950 border-b border-slate-800/80 px-4 py-3 pt-safe flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-2.5">
           <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-600/30">
             <Wallet className="w-5 h-5" />
@@ -83,23 +80,20 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div 
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[55] lg:hidden"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden"
           onClick={closeMobile}
         />
       )}
 
       {/* Sidebar Desktop & Mobile */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[60] w-72 max-w-[85vw] bg-slate-900/98 backdrop-blur-2xl border-r border-slate-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          mobileOpen ? 'translate-x-0 shadow-2xl shadow-slate-950/80' : '-translate-x-full'
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
         <div>
-          <div 
-            className="p-5 border-b border-slate-800/80 flex items-center justify-between"
-            style={{ paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
-          >
+          <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/25">
                 <Wallet className="w-6 h-6" />
@@ -147,7 +141,7 @@ export default function Sidebar() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-260px)]">
+          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-240px)]">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -172,10 +166,7 @@ export default function Sidebar() {
         </div>
 
         {/* User Info & Logout Footer */}
-        <div 
-          className="p-4 border-t border-slate-800/80 bg-slate-900/50"
-          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
-        >
+        <div className="p-4 border-t border-slate-800/80 bg-slate-900/50">
           <div className="flex items-center justify-between">
             <div className="min-w-0 pr-2">
               <p className="text-xs font-semibold text-slate-200 truncate">{user?.email || 'Admin'}</p>
