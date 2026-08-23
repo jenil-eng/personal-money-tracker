@@ -31,9 +31,21 @@ export default function BottomNav({ badgeCount = 0, hasDotBadge = false }) {
     navigate(path);
   };
 
-  const isTabActive = (path) => {
-    if (path === '/dashboard') return optimisticPath === '/dashboard';
-    return optimisticPath.startsWith(path);
+  const isTabActive = (targetPath) => {
+    const current = optimisticPath || location.pathname || '';
+    if (targetPath === '/dashboard') {
+      return current === '/dashboard' || current === '/';
+    }
+    if (targetPath === '/transactions') {
+      return current.startsWith('/transactions');
+    }
+    if (targetPath === '/earnings') {
+      return current.startsWith('/earnings');
+    }
+    if (targetPath === '/analytics') {
+      return current.startsWith('/analytics');
+    }
+    return current.startsWith(targetPath);
   };
 
   return (
