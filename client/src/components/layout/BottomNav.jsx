@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   ArrowDownCircle, 
@@ -11,11 +11,29 @@ import {
 
 export default function BottomNav({ badgeCount = 0, hasDotBadge = false }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Optimistic tab tracking for 0ms immediate visual feedback on touch down
+  const [optimisticPath, setOptimisticPath] = useState(location.pathname);
+
+  useEffect(() => {
+    setOptimisticPath(location.pathname);
+  }, [location.pathname]);
+
+  const handleTouchTab = (path) => {
+    setOptimisticPath(path);
+    setShowAddMenu(false);
+  };
 
   const handleSelectAdd = (path) => {
     setShowAddMenu(false);
     navigate(path);
+  };
+
+  const isTabActive = (path) => {
+    if (path === '/dashboard') return optimisticPath === '/dashboard';
+    return optimisticPath.startsWith(path);
   };
 
   return (
@@ -74,42 +92,42 @@ export default function BottomNav({ badgeCount = 0, hasDotBadge = false }) {
         className="lg:hidden fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md bg-slate-950/85 backdrop-blur-2xl backdrop-saturate-150 border border-white/15 rounded-full p-1.5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.85)] box-border select-none pointer-events-auto"
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
-        {/* 1. Home Tab (Explicit non-zero alpha background to force WebKit hit-testing + NO hover bug) */}
+        {/* 1. Home Tab (0ms Touch-Down Active Highlight) */}
         <NavLink
           to="/dashboard"
-          onClick={() => setShowAddMenu(false)}
-          className={({ isActive }) =>
-            `flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-150 cursor-pointer touch-manipulation active:scale-95 active:bg-white/15 relative ${
-              isActive 
-                ? 'bg-white/10 border border-white/25 text-white font-bold shadow-inner' 
-                : 'text-slate-400 active:text-slate-200 border border-transparent'
-            }`
-          }
+          onTouchStart={() => handleTouchTab('/dashboard')}
+          onMouseDown={() => handleTouchTab('/dashboard')}
+          onClick={() => handleTouchTab('/dashboard')}
+          className={`flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-100 cursor-pointer touch-manipulation active:scale-95 relative ${
+            isTabActive('/dashboard') 
+              ? 'bg-white/15 border border-white/30 text-white font-bold shadow-inner scale-[1.02]' 
+              : 'text-slate-400 active:text-slate-200 border border-transparent'
+          }`}
           style={{ 
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
-            backgroundColor: 'rgba(255, 255, 255, 0.01)'
+            backgroundColor: isTabActive('/dashboard') ? undefined : 'rgba(255, 255, 255, 0.01)'
           }}
         >
           <Home className="w-5 h-5 stroke-[2] pointer-events-none" />
           <span className="text-[11px] leading-none tracking-tight font-medium mt-1 pointer-events-none">Home</span>
         </NavLink>
 
-        {/* 2. Expenses Tab */}
+        {/* 2. Expenses Tab (0ms Touch-Down Active Highlight) */}
         <NavLink
           to="/transactions/history"
-          onClick={() => setShowAddMenu(false)}
-          className={({ isActive }) =>
-            `flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-150 cursor-pointer touch-manipulation active:scale-95 active:bg-rose-500/25 relative ${
-              isActive 
-                ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold shadow-inner' 
-                : 'text-slate-400 active:text-slate-200 border border-transparent'
-            }`
-          }
+          onTouchStart={() => handleTouchTab('/transactions/history')}
+          onMouseDown={() => handleTouchTab('/transactions/history')}
+          onClick={() => handleTouchTab('/transactions/history')}
+          className={`flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-100 cursor-pointer touch-manipulation active:scale-95 relative ${
+            isTabActive('/transactions') 
+              ? 'bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold shadow-inner scale-[1.02]' 
+              : 'text-slate-400 active:text-slate-200 border border-transparent'
+          }`}
           style={{ 
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
-            backgroundColor: 'rgba(255, 255, 255, 0.01)'
+            backgroundColor: isTabActive('/transactions') ? undefined : 'rgba(255, 255, 255, 0.01)'
           }}
         >
           <div className="relative flex items-center justify-center pointer-events-none">
@@ -145,21 +163,21 @@ export default function BottomNav({ badgeCount = 0, hasDotBadge = false }) {
           </button>
         </div>
 
-        {/* 4. Earnings Tab */}
+        {/* 4. Earnings Tab (0ms Touch-Down Active Highlight) */}
         <NavLink
           to="/earnings"
-          onClick={() => setShowAddMenu(false)}
-          className={({ isActive }) =>
-            `flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-150 cursor-pointer touch-manipulation active:scale-95 active:bg-emerald-500/25 relative ${
-              isActive 
-                ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold shadow-inner' 
-                : 'text-slate-400 active:text-slate-200 border border-transparent'
-            }`
-          }
+          onTouchStart={() => handleTouchTab('/earnings')}
+          onMouseDown={() => handleTouchTab('/earnings')}
+          onClick={() => handleTouchTab('/earnings')}
+          className={`flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-100 cursor-pointer touch-manipulation active:scale-95 relative ${
+            isTabActive('/earnings') 
+              ? 'bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold shadow-inner scale-[1.02]' 
+              : 'text-slate-400 active:text-slate-200 border border-transparent'
+          }`}
           style={{ 
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
-            backgroundColor: 'rgba(255, 255, 255, 0.01)'
+            backgroundColor: isTabActive('/earnings') ? undefined : 'rgba(255, 255, 255, 0.01)'
           }}
         >
           <div className="relative flex items-center justify-center pointer-events-none">
@@ -173,21 +191,21 @@ export default function BottomNav({ badgeCount = 0, hasDotBadge = false }) {
           <span className="text-[11px] leading-none tracking-tight font-medium mt-1 pointer-events-none">Earnings</span>
         </NavLink>
 
-        {/* 5. Analytics Tab */}
+        {/* 5. Analytics Tab (0ms Touch-Down Active Highlight) */}
         <NavLink
           to="/analytics"
-          onClick={() => setShowAddMenu(false)}
-          className={({ isActive }) =>
-            `flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-150 cursor-pointer touch-manipulation active:scale-95 active:bg-white/15 relative ${
-              isActive 
-                ? 'bg-white/10 border border-white/25 text-white font-bold shadow-inner' 
-                : 'text-slate-400 active:text-slate-200 border border-transparent'
-            }`
-          }
+          onTouchStart={() => handleTouchTab('/analytics')}
+          onMouseDown={() => handleTouchTab('/analytics')}
+          onClick={() => handleTouchTab('/analytics')}
+          className={`flex-1 h-full min-h-[52px] py-2 px-1 flex flex-col items-center justify-center rounded-full transition-all duration-100 cursor-pointer touch-manipulation active:scale-95 relative ${
+            isTabActive('/analytics') 
+              ? 'bg-white/15 border border-white/30 text-white font-bold shadow-inner scale-[1.02]' 
+              : 'text-slate-400 active:text-slate-200 border border-transparent'
+          }`}
           style={{ 
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
-            backgroundColor: 'rgba(255, 255, 255, 0.01)'
+            backgroundColor: isTabActive('/analytics') ? undefined : 'rgba(255, 255, 255, 0.01)'
           }}
         >
           <BarChart3 className="w-5 h-5 stroke-[2] pointer-events-none" />
