@@ -56,53 +56,63 @@ async function readTransactions() {
     const rows = response.data.values || [];
     const knownPMs = ['cash', 'upi', 'debit card', 'credit card', 'bank transfer', 'other', '-'];
 
-    return rows.map((row, index) => {
-      const date = formatDate(row[0] || '');
-      const description = row[1] || '';
-      const category = row[2] || '';
+    const result = rows
+      .map((row, index) => {
+        if (!row || row.length === 0 || !row.some(cell => String(cell).trim() !== '')) {
+          return null;
+        }
 
-      const val3 = row[3] !== undefined ? row[3] : '';
-      const val4 = row[4] !== undefined ? row[4] : '';
-      const val5 = row[5] !== undefined ? row[5] : '';
-      const val6 = row[6] !== undefined ? row[6] : '';
+        const date = formatDate(row[0] || '');
+        const description = row[1] || '';
+        const category = row[2] || '';
 
-      const num3 = parseAmount(val3);
-      const num4 = parseAmount(val4);
+        const val3 = row[3] !== undefined ? row[3] : '';
+        const val4 = row[4] !== undefined ? row[4] : '';
+        const val5 = row[5] !== undefined ? row[5] : '';
+        const val6 = row[6] !== undefined ? row[6] : '';
 
-      let subcategory = '';
-      let amount = 0;
-      let paymentMethod = '';
-      let notes = '';
+        const num3 = parseAmount(val3);
+        const num4 = parseAmount(val4);
 
-      if (num4 > 0 || knownPMs.includes(String(val5).toLowerCase().trim())) {
-        subcategory = String(val3);
-        amount = num4 > 0 ? num4 : num3;
-        paymentMethod = String(val5);
-        notes = String(val6);
-      } else if (num3 > 0 || knownPMs.includes(String(val4).toLowerCase().trim())) {
-        amount = num3;
-        paymentMethod = String(val4);
-        notes = String(val5);
-        subcategory = String(val6);
-      } else {
-        amount = num4 || num3 || 0;
-        subcategory = String(val3);
-        paymentMethod = String(val5 || val4);
-        notes = String(val6);
-      }
+        if (!date && !description && num3 === 0 && num4 === 0) {
+          return null;
+        }
 
-      return {
-        id: index + 2,
-        rowNumber: index + 2,
-        date,
-        description,
-        category,
-        subcategory,
-        amount,
-        paymentMethod,
-        notes
-      };
-    });
+        let subcategory = '';
+        let amount = 0;
+        let paymentMethod = '';
+        let notes = '';
+
+        if (num4 > 0 || knownPMs.includes(String(val5).toLowerCase().trim())) {
+          subcategory = String(val3);
+          amount = num4 > 0 ? num4 : num3;
+          paymentMethod = String(val5);
+          notes = String(val6);
+        } else if (num3 > 0 || knownPMs.includes(String(val4).toLowerCase().trim())) {
+          amount = num3;
+          paymentMethod = String(val4);
+          notes = String(val5);
+          subcategory = String(val6);
+        } else {
+          amount = num4 || num3 || 0;
+          subcategory = String(val3);
+          paymentMethod = String(val5 || val4);
+          notes = String(val6);
+        }
+
+        return {
+          id: index + 2,
+          rowNumber: index + 2,
+          date,
+          description,
+          category,
+          subcategory,
+          amount,
+          paymentMethod,
+          notes
+        };
+      })
+      .filter(Boolean);
 
     cache.transactions = { data: result, timestamp: Date.now() };
     return result;
@@ -278,7 +288,7 @@ async function deleteTransaction(id) {
         const rowNum = target.rowNumber;
         await sheets.spreadsheets.values.clear({
           spreadsheetId,
-          range: `TRANSACTIONS!A${rowNum}:F${rowNum}`
+          range: `TRANSACTIONS!A${rowNum}:G${rowNum}`
         });
 
         return { success: true };
