@@ -68,14 +68,14 @@ export default function BottomNav() {
       {/* Main Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/80 px-2 h-[50px] flex items-center justify-around shadow-2xl w-full max-w-full box-content"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/80 flex items-center justify-between shadow-2xl w-full max-w-full select-none"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
       >
         {/* 1. Dashboard */}
         <NavLink
           to="/dashboard"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 h-full transition ${
+            `flex-1 py-2 flex flex-col items-center justify-center transition active:scale-95 cursor-pointer touch-manipulation ${
               isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -88,7 +88,7 @@ export default function BottomNav() {
         <NavLink
           to="/transactions/history"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 h-full transition ${
+            `flex-1 py-2 flex flex-col items-center justify-center transition active:scale-95 cursor-pointer touch-manipulation ${
               isActive ? 'text-rose-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -98,19 +98,19 @@ export default function BottomNav() {
         </NavLink>
 
         {/* 3. Docked Floating Elevated Center "+ Add" Slot */}
-        <div className="relative flex flex-col items-center justify-center w-14 h-full">
+        <div className="flex-1 flex flex-col items-center justify-center relative cursor-pointer touch-manipulation">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
             type="button"
-            className="absolute -top-5 flex flex-col items-center focus:outline-none group"
+            className="flex flex-col items-center focus:outline-none group -mt-5 active:scale-95 transition-transform"
             aria-label="Add Action"
           >
-            <div className={`p-3.5 rounded-full shadow-xl border-4 border-slate-950 transition-transform duration-200 ${
+            <div className={`p-3.5 rounded-full shadow-xl border-4 border-slate-950 transition-all duration-200 ${
               showAddMenu 
                 ? 'bg-rose-600 text-white rotate-45 scale-105 shadow-rose-600/40' 
-                : 'bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-indigo-600/50 group-hover:scale-105 active:scale-95'
+                : 'bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-indigo-600/50 group-hover:scale-105'
             }`}>
-              <Plus className="w-6 h-6 stroke-[2.5]" />
+              <Plus className="w-5 h-5 stroke-[2.5]" />
             </div>
             <span className="text-[10px] text-indigo-300 font-bold mt-0.5">Add</span>
           </button>
@@ -120,7 +120,7 @@ export default function BottomNav() {
         <NavLink
           to="/earnings"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 h-full transition ${
+            `flex-1 py-2 flex flex-col items-center justify-center transition active:scale-95 cursor-pointer touch-manipulation ${
               isActive ? 'text-emerald-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
@@ -133,7 +133,7 @@ export default function BottomNav() {
         <NavLink
           to="/analytics"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-14 h-full transition ${
+            `flex-1 py-2 flex flex-col items-center justify-center transition active:scale-95 cursor-pointer touch-manipulation ${
               isActive ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-slate-200'
             }`
           }
