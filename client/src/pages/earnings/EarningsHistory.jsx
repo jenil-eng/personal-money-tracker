@@ -22,8 +22,17 @@ export default function EarningsHistory() {
   const navigate = useNavigate();
   const { formatAmount } = useAuth();
 
-  const [earnings, setEarnings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [earnings, setEarnings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_earnings');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_earnings');
+  });
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,7 +61,9 @@ export default function EarningsHistory() {
         getEarningsApi(),
         getSettingsApi()
       ]);
-      setEarnings(earnRes.data || []);
+      const freshEarn = earnRes.data || [];
+      setEarnings(freshEarn);
+      localStorage.setItem('pmt_cached_earnings', JSON.stringify(freshEarn));
       if (settingsRes.data?.sources) {
         setSourcesList(settingsRes.data.sources);
       }

@@ -6,7 +6,6 @@ import {
   ArrowUpCircle,
   BarChart3, 
   Plus,
-  PlusCircle,
   X
 } from 'lucide-react';
 
@@ -24,18 +23,18 @@ export default function BottomNav() {
       {/* Quick Add Popover Modal / Overlay */}
       {showAddMenu && (
         <div 
-          className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex flex-col justify-end p-4 animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex flex-col justify-end p-4 animate-in fade-in duration-150"
           onClick={() => setShowAddMenu(false)}
         >
           <div 
-            className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-3 shadow-2xl mb-16"
+            className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl mb-[calc(5rem+env(safe-area-inset-bottom,1rem))]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Quick Action</span>
               <button 
                 onClick={() => setShowAddMenu(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -69,9 +68,9 @@ export default function BottomNav() {
       {/* Main Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-2 flex items-center justify-around shadow-2xl pb-safe"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950 border-t border-slate-800/80 px-2 pt-2.5 pb-safe flex items-center justify-around shadow-2xl w-full max-w-full h-16 box-content"
       >
-        {/* Dashboard */}
+        {/* 1. Dashboard */}
         <NavLink
           to="/dashboard"
           className={({ isActive }) =>
@@ -84,7 +83,7 @@ export default function BottomNav() {
           <span className="text-[10px] tracking-tight">Home</span>
         </NavLink>
 
-        {/* Expenses */}
+        {/* 2. Expenses */}
         <NavLink
           to="/transactions/history"
           className={({ isActive }) =>
@@ -97,22 +96,26 @@ export default function BottomNav() {
           <span className="text-[10px] tracking-tight">Expenses</span>
         </NavLink>
 
-        {/* Floating Quick Add Trigger */}
-        <button
-          onClick={() => setShowAddMenu(!showAddMenu)}
-          className="flex flex-col items-center justify-center -mt-6 focus:outline-none"
-        >
-          <div className={`p-3 rounded-full shadow-lg border-2 border-slate-900 transition ${
-            showAddMenu 
-              ? 'bg-rose-600 text-white rotate-45 scale-105' 
-              : 'bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-indigo-600/40 hover:scale-105 active:scale-95'
-          }`}>
-            <Plus className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <span className="text-[10px] text-indigo-300 font-semibold mt-0.5">Add</span>
-        </button>
+        {/* 3. Docked Floating Elevated Center "+ Add" Slot */}
+        <div className="relative flex flex-col items-center justify-center w-14 h-full">
+          <button
+            onClick={() => setShowAddMenu(!showAddMenu)}
+            type="button"
+            className="absolute -top-5 flex flex-col items-center focus:outline-none group"
+            aria-label="Add Action"
+          >
+            <div className={`p-3.5 rounded-full shadow-xl border-4 border-slate-950 transition-transform duration-200 ${
+              showAddMenu 
+                ? 'bg-rose-600 text-white rotate-45 scale-105 shadow-rose-600/40' 
+                : 'bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-indigo-600/50 group-hover:scale-105 active:scale-95'
+            }`}>
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="text-[10px] text-indigo-300 font-bold mt-0.5">Add</span>
+          </button>
+        </div>
 
-        {/* Earnings */}
+        {/* 4. Earnings */}
         <NavLink
           to="/earnings"
           className={({ isActive }) =>
@@ -125,7 +128,7 @@ export default function BottomNav() {
           <span className="text-[10px] tracking-tight">Earnings</span>
         </NavLink>
 
-        {/* Analytics */}
+        {/* 5. Analytics */}
         <NavLink
           to="/analytics"
           className={({ isActive }) =>
@@ -141,4 +144,3 @@ export default function BottomNav() {
     </>
   );
 }
-

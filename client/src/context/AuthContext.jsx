@@ -6,7 +6,10 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('pmt_token'));
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('pmt_user') || 'null'));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // If token and user exist in cache, render UI immediately without blocking
+    return !localStorage.getItem('pmt_token') || !localStorage.getItem('pmt_user');
+  });
   const [privacyMode, setPrivacyMode] = useState(() => {
     return localStorage.getItem('pmt_privacy') === 'true';
   });
@@ -50,11 +53,13 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
           console.warn('JWT token invalid or expired. Logging out user:', err);
           logout();
+        } finally {
+          setLoading(false);
         }
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();

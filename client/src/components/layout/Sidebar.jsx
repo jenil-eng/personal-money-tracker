@@ -44,7 +44,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Header */}
-      <header className="lg:hidden bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950 border-b border-slate-800/80 px-4 py-3 pt-safe flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-2.5">
           <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-600/30">
             <Wallet className="w-5 h-5" />

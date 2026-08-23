@@ -1,24 +1,60 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
+
+const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://personal-money-tracker-backend.onrender.com/api' : '/api');
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://personal-money-tracker-backend.onrender.com/api' : '/api')
+  baseURL
 });
 
-// Attach Authorization Bearer token to all outgoing requests
+// Early pre-warm ping to wake Render backend as early as possible
+if (typeof window !== 'undefined') {
+  axios.get(`${baseURL}/health`).catch(() => {});
+}
+
+let coldStartToastId = null;
+
+// Attach Authorization Bearer token & cold start detector to all outgoing requests
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('pmt_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Detect if request takes > 2.5 seconds (Render free tier cold start)
+  config.coldStartTimer = setTimeout(() => {
+    if (!coldStartToastId) {
+      coldStartToastId = toast.loading('Server is waking up (Render free tier cold start)...', {
+        id: 'render-cold-start-toast'
+      });
+    }
+  }, 2500);
+
   return config;
 }, (error) => {
   return Promise.reject(error);
 });
 
-// Response error handling interceptor
+// Response error handling & timer clearing interceptor
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config?.coldStartTimer) {
+      clearTimeout(response.config.coldStartTimer);
+    }
+    if (coldStartToastId) {
+      toast.dismiss(coldStartToastId);
+      coldStartToastId = null;
+    }
+    return response;
+  },
   (error) => {
+    if (error.config?.coldStartTimer) {
+      clearTimeout(error.config.coldStartTimer);
+    }
+    if (coldStartToastId) {
+      toast.dismiss(coldStartToastId);
+      coldStartToastId = null;
+    }
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('pmt_token');
       localStorage.removeItem('pmt_user');

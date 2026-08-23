@@ -29,8 +29,17 @@ import toast from 'react-hot-toast';
 
 export default function Subscriptions() {
   const { formatAmount } = useAuth();
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [subscriptions, setSubscriptions] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_subscriptions');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_subscriptions');
+  });
   const [categoriesList, setCategoriesList] = useState([]);
   const [paymentMethodsList, setPaymentMethodsList] = useState([]);
 
@@ -57,6 +66,7 @@ export default function Subscriptions() {
       const subsRes = await getSubscriptionsApi();
       if (Array.isArray(subsRes.data)) {
         setSubscriptions(subsRes.data);
+        localStorage.setItem('pmt_cached_subscriptions', JSON.stringify(subsRes.data));
       }
     } catch (err) {
       console.warn('Subscriptions API error:', err);

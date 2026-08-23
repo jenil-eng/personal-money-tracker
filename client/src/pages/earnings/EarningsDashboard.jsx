@@ -14,8 +14,17 @@ import { ArrowUpCircle, Calendar, Hash, PlusCircle, History, X, Zap } from 'luci
 import toast from 'react-hot-toast';
 
 export default function EarningsDashboard() {
-  const [earnings, setEarnings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [earnings, setEarnings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_earnings');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_earnings');
+  });
 
   // Date Filter State
   const [filterMode, setFilterMode] = useState('all');
@@ -26,7 +35,9 @@ export default function EarningsDashboard() {
   const fetchEarnings = async () => {
     try {
       const res = await getEarningsApi();
-      setEarnings(res.data || []);
+      const freshEarn = res.data || [];
+      setEarnings(freshEarn);
+      localStorage.setItem('pmt_cached_earnings', JSON.stringify(freshEarn));
     } catch (err) {
       toast.error('Unable to fetch earnings from Google Sheets.');
     } finally {

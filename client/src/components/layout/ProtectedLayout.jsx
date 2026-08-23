@@ -21,11 +21,12 @@ export default function ProtectedLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row">
+    <div className="h-full h-[100dvh] w-full bg-slate-950 text-slate-100 flex flex-col lg:flex-row overflow-hidden">
       <Sidebar />
-      <main className="flex-1 lg:pl-64 min-h-screen pb-32 lg:pb-8 overflow-x-hidden">
-        <div className="max-w-7xl mx-auto p-3.5 sm:p-6 lg:p-8">
+      <main className="flex-1 lg:pl-64 h-full w-full overflow-y-auto overflow-x-hidden pt-[calc(4.25rem+env(safe-area-inset-top,0px))] pb-[calc(9.5rem+env(safe-area-inset-bottom,1rem))] lg:pt-0 lg:pb-8 relative z-0">
+        <div className="max-w-7xl mx-auto p-3.5 sm:p-6 lg:p-8 w-full max-w-full">
           <Outlet />
+          <div className="h-16 lg:hidden shrink-0 pointer-events-none" aria-hidden="true" />
         </div>
       </main>
       <BottomNav />

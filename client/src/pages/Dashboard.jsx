@@ -33,9 +33,25 @@ import toast from 'react-hot-toast';
 
 export default function Dashboard() {
   const { formatAmount } = useAuth();
-  const [transactions, setTransactions] = useState([]);
-  const [earnings, setEarnings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_transactions');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [earnings, setEarnings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_earnings');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_transactions') && !localStorage.getItem('pmt_cached_earnings');
+  });
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async (showToast = false) => {
@@ -45,12 +61,16 @@ export default function Dashboard() {
         getTransactionsApi(),
         getEarningsApi()
       ]);
-      setTransactions(txRes.data || []);
-      setEarnings(earnRes.data || []);
+      const freshTx = txRes.data || [];
+      const freshEarn = earnRes.data || [];
+      setTransactions(freshTx);
+      setEarnings(freshEarn);
+      localStorage.setItem('pmt_cached_transactions', JSON.stringify(freshTx));
+      localStorage.setItem('pmt_cached_earnings', JSON.stringify(freshEarn));
       if (showToast) toast.success('Dashboard refreshed');
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      toast.error('Unable to connect to backend.');
+      if (showToast) toast.error('Unable to connect to backend.');
     } finally {
       setLoading(false);
       setRefreshing(false);

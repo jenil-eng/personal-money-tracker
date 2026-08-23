@@ -30,9 +30,25 @@ export default function TransactionHistory() {
   const navigate = useNavigate();
   const { formatAmount } = useAuth();
 
-  const [transactions, setTransactions] = useState([]);
-  const [earnings, setEarnings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_transactions');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [earnings, setEarnings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_earnings');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_transactions') && !localStorage.getItem('pmt_cached_earnings');
+  });
 
   // Type Filter: 'all' | 'expense' | 'income'
   const [typeFilter, setTypeFilter] = useState('all');
@@ -78,8 +94,12 @@ export default function TransactionHistory() {
         getEarningsApi(),
         getSettingsApi()
       ]);
-      setTransactions(txRes.data || []);
-      setEarnings(earnRes.data || []);
+      const freshTx = txRes.data || [];
+      const freshEarn = earnRes.data || [];
+      setTransactions(freshTx);
+      setEarnings(freshEarn);
+      localStorage.setItem('pmt_cached_transactions', JSON.stringify(freshTx));
+      localStorage.setItem('pmt_cached_earnings', JSON.stringify(freshEarn));
       if (settingsRes.data) {
         setCategoriesList(settingsRes.data.categories || []);
         setPaymentMethodsList(settingsRes.data.paymentMethods || []);

@@ -14,8 +14,17 @@ import { ArrowDownCircle, Calendar, Hash, PlusCircle, History, X, Zap } from 'lu
 import toast from 'react-hot-toast';
 
 export default function TransactionDashboard() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_transactions');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_transactions');
+  });
 
   // Date Filter State
   const [filterMode, setFilterMode] = useState('all'); 
@@ -26,7 +35,9 @@ export default function TransactionDashboard() {
   const fetchTransactions = async () => {
     try {
       const res = await getTransactionsApi();
-      setTransactions(res.data || []);
+      const freshTx = res.data || [];
+      setTransactions(freshTx);
+      localStorage.setItem('pmt_cached_transactions', JSON.stringify(freshTx));
     } catch (err) {
       toast.error('Unable to fetch transactions from Google Sheets.');
     } finally {

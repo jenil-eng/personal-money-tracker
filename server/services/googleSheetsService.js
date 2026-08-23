@@ -9,13 +9,39 @@ function isSheetsConfigured() {
 }
 
 // ----------------------------------------------------
+// SERVER-SIDE IN-MEMORY TTL CACHE (60s TTL)
+// ----------------------------------------------------
+const cache = {
+  transactions: { data: null, timestamp: 0 },
+  earnings: { data: null, timestamp: 0 },
+  lists: { data: null, timestamp: 0 }
+};
+const CACHE_TTL_MS = 60 * 1000;
+
+function invalidateCache(key) {
+  if (key && cache[key]) {
+    cache[key] = { data: null, timestamp: 0 };
+  } else {
+    cache.transactions = { data: null, timestamp: 0 };
+    cache.earnings = { data: null, timestamp: 0 };
+    cache.lists = { data: null, timestamp: 0 };
+  }
+}
+
+// ----------------------------------------------------
 // TRANSACTIONS
 // ----------------------------------------------------
 
 async function readTransactions() {
+  const now = Date.now();
+  if (cache.transactions.data && (now - cache.transactions.timestamp < CACHE_TTL_MS)) {
+    return cache.transactions.data;
+  }
+
   const client = getGoogleSheetsClient();
   if (!client) {
     const store = mockStore.readStore();
+    cache.transactions = { data: store.transactions, timestamp: Date.now() };
     return store.transactions;
   }
 
@@ -77,14 +103,19 @@ async function readTransactions() {
         notes
       };
     });
+
+    cache.transactions = { data: result, timestamp: Date.now() };
+    return result;
   } catch (error) {
     console.warn('Google Sheets API unavailable, using local store fallback:', error.message);
     const store = mockStore.readStore();
+    cache.transactions = { data: store.transactions, timestamp: Date.now() };
     return store.transactions;
   }
 }
 
 async function addTransaction(data) {
+  invalidateCache('transactions');
   const { date, description, category, subcategory = '', amount, paymentMethod, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
@@ -164,6 +195,7 @@ function findRecord(list, targetId) {
 }
 
 async function updateTransaction(id, data) {
+  invalidateCache('transactions');
   const { date, description, category, subcategory = '', amount, paymentMethod, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
@@ -232,6 +264,7 @@ async function updateTransaction(id, data) {
 }
 
 async function deleteTransaction(id) {
+  invalidateCache('transactions');
   const client = getGoogleSheetsClient();
   const targetId = parseInt(id, 10);
 
@@ -272,9 +305,15 @@ async function deleteTransaction(id) {
 // ----------------------------------------------------
 
 async function readEarnings() {
+  const now = Date.now();
+  if (cache.earnings.data && (now - cache.earnings.timestamp < CACHE_TTL_MS)) {
+    return cache.earnings.data;
+  }
+
   const client = getGoogleSheetsClient();
   if (!client) {
     const store = mockStore.readStore();
+    cache.earnings = { data: store.earnings, timestamp: Date.now() };
     return store.earnings;
   }
 
@@ -287,7 +326,7 @@ async function readEarnings() {
     });
 
     const rows = response.data.values || [];
-    return rows.map((row, index) => ({
+    const result = rows.map((row, index) => ({
       id: index + 2,
       rowNumber: index + 2,
       date: formatDate(row[0] || ''),
@@ -296,14 +335,19 @@ async function readEarnings() {
       amount: parseAmount(row[3]),
       notes: row[4] || ''
     }));
+
+    cache.earnings = { data: result, timestamp: Date.now() };
+    return result;
   } catch (error) {
     console.warn('Google Sheets API unavailable, reading earnings from local store:', error.message);
     const store = mockStore.readStore();
+    cache.earnings = { data: store.earnings, timestamp: Date.now() };
     return store.earnings;
   }
 }
 
 async function addEarning(data) {
+  invalidateCache('earnings');
   const { date, description, source, amount, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
@@ -363,6 +407,7 @@ async function addEarning(data) {
 }
 
 async function updateEarning(id, data) {
+  invalidateCache('earnings');
   const { date, description, source, amount, notes = '' } = data;
   const client = getGoogleSheetsClient();
 
@@ -425,6 +470,7 @@ async function updateEarning(id, data) {
 }
 
 async function deleteEarning(id) {
+  invalidateCache('earnings');
   const client = getGoogleSheetsClient();
   const targetId = parseInt(id, 10);
 
@@ -465,9 +511,15 @@ async function deleteEarning(id) {
 // ----------------------------------------------------
 
 async function readLists() {
+  const now = Date.now();
+  if (cache.lists.data && (now - cache.lists.timestamp < CACHE_TTL_MS)) {
+    return cache.lists.data;
+  }
+
   const client = getGoogleSheetsClient();
   if (!client) {
     const store = mockStore.readStore();
+    cache.lists = { data: store.lists, timestamp: Date.now() };
     return store.lists;
   }
 
@@ -494,15 +546,19 @@ async function readLists() {
 
     const store = mockStore.readStore();
 
-    return {
+    const result = {
       categories: categories.size > 0 ? Array.from(categories) : store.lists.categories,
       sources: sources.size > 0 ? Array.from(sources) : store.lists.sources,
       paymentMethods: paymentMethods.size > 0 ? Array.from(paymentMethods) : store.lists.paymentMethods,
       subcategories: subcategories.size > 0 ? Array.from(subcategories) : (store.lists.subcategories || [])
     };
+
+    cache.lists = { data: result, timestamp: Date.now() };
+    return result;
   } catch (error) {
     console.warn('Google Sheets read lists failed, returning local store lists:', error.message);
     const store = mockStore.readStore();
+    cache.lists = { data: store.lists, timestamp: Date.now() };
     return store.lists;
   }
 }
@@ -577,6 +633,7 @@ async function deletePaymentMethod(methodName) {
 }
 
 async function saveLists(lists) {
+  invalidateCache('lists');
   const client = getGoogleSheetsClient();
 
   // Always keep mock store updated
@@ -619,6 +676,7 @@ async function saveLists(lists) {
 
 module.exports = {
   isSheetsConfigured,
+  invalidateCache,
   readTransactions,
   addTransaction,
   updateTransaction,

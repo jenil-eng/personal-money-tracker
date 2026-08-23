@@ -24,15 +24,38 @@ import toast from 'react-hot-toast';
 export default function Settings() {
   const { privacyMode, togglePrivacyMode } = useAuth();
   
-  const [categories, setCategories] = useState([]);
-  const [sources, setSources] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [categories, setCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_settings');
+      return cached ? JSON.parse(cached).categories || [] : [];
+    } catch {
+      return [];
+    }
+  });
+  const [sources, setSources] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_settings');
+      return cached ? JSON.parse(cached).sources || [] : [];
+    } catch {
+      return [];
+    }
+  });
+  const [paymentMethods, setPaymentMethods] = useState(() => {
+    try {
+      const cached = localStorage.getItem('pmt_cached_settings');
+      return cached ? JSON.parse(cached).paymentMethods || [] : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Existing records for deletion usage check
   const [transactions, setTransactions] = useState([]);
   const [earnings, setEarnings] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('pmt_cached_settings');
+  });
   const [saving, setSaving] = useState(false);
 
   // Adding state
@@ -57,6 +80,7 @@ export default function Settings() {
         setCategories(settingsRes.data.categories || []);
         setSources(settingsRes.data.sources || []);
         setPaymentMethods(settingsRes.data.paymentMethods || []);
+        localStorage.setItem('pmt_cached_settings', JSON.stringify(settingsRes.data));
       }
       setTransactions(txRes.data || []);
       setEarnings(earnRes.data || []);
