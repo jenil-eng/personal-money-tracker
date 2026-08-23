@@ -46,9 +46,7 @@ export default function Sidebar() {
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950 border-b border-slate-800/80 px-4 py-3 pt-safe flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-2.5">
-          <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-600/30">
-            <Wallet className="w-5 h-5" />
-          </div>
+          <img src="/icon-512.png" alt="Money Tracker Logo" className="w-9 h-9 rounded-xl shadow-lg shadow-cyan-500/20 object-cover border border-white/10" />
           <div>
             <h1 className="font-bold text-white text-base leading-none">Money Tracker</h1>
             <span className="text-[11px] text-indigo-400 font-medium">My Personal Expenses</span>
@@ -95,9 +93,7 @@ export default function Sidebar() {
         <div>
           <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/25">
-                <Wallet className="w-6 h-6" />
-              </div>
+              <img src="/icon-512.png" alt="Money Tracker Logo" className="w-10 h-10 rounded-xl shadow-lg shadow-cyan-500/20 object-cover border border-white/10" />
               <div>
                 <h2 className="font-bold text-white text-lg tracking-tight">Money Tracker</h2>
                 <p className="text-xs text-indigo-400 font-medium">My Personal Expenses</p>
