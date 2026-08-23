@@ -22,7 +22,8 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  RotateCcw
+  RotateCcw,
+  RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -49,6 +50,7 @@ export default function TransactionHistory() {
   const [loading, setLoading] = useState(() => {
     return !localStorage.getItem('pmt_cached_transactions') && !localStorage.getItem('pmt_cached_earnings');
   });
+  const [syncing, setSyncing] = useState(false);
 
   // Type Filter: 'all' | 'expense' | 'income'
   const [typeFilter, setTypeFilter] = useState('all');
@@ -108,6 +110,20 @@ export default function TransactionHistory() {
       toast.error('Unable to load history records.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleManualSync = async () => {
+    setSyncing(true);
+    try {
+      localStorage.removeItem('pmt_cached_transactions');
+      localStorage.removeItem('pmt_cached_earnings');
+      await fetchRecords();
+      toast.success('Synced fresh records from Google Sheets!');
+    } catch (err) {
+      toast.error('Sync failed.');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -269,6 +285,17 @@ export default function TransactionHistory() {
         </div>
 
         <div className="flex items-center space-x-2 self-start sm:self-auto flex-wrap gap-y-2">
+          <button
+            type="button"
+            onClick={handleManualSync}
+            disabled={syncing}
+            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer active:scale-95 disabled:opacity-50"
+            title="Sync fresh data from Google Sheets"
+          >
+            <RefreshCw className={`w-4 h-4 text-indigo-400 ${syncing ? 'animate-spin' : ''}`} />
+            <span>{syncing ? 'Syncing...' : 'Sync'}</span>
+          </button>
+
           <button
             onClick={() => setGroupByMonth(!groupByMonth)}
             className={`inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition ${
