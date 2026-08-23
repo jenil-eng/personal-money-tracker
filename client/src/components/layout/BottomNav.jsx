@@ -68,8 +68,8 @@ export default function BottomNav() {
       {/* Main Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950 border-t border-slate-800/80 px-2 pt-2.5 flex items-center justify-around shadow-2xl w-full max-w-full h-16 box-content"
-        style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom, 0px))' }}
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-950 border-t border-slate-800/80 px-2 pt-2.5 flex items-center justify-around shadow-2xl w-full max-w-full h-16 box-content"
+        style={{ paddingBottom: 'max(1.5rem, calc(0.625rem + env(safe-area-inset-bottom, 0px)))' }}
       >
         {/* 1. Dashboard */}
         <NavLink
