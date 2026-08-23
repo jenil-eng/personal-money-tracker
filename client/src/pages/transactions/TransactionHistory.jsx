@@ -213,18 +213,39 @@ export default function TransactionHistory() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteItem) return;
+    const targetId = deleteItem.id || deleteItem.rowNumber;
+    const targetType = deleteItem.recordType;
+
     setDeleting(true);
+
+    // Optimistically remove from React state & localStorage IMMEDIATELY (0ms UI latency)
+    if (targetType === 'expense') {
+      const updatedTx = transactions.filter(t => (t.id || t.rowNumber) !== targetId);
+      setTransactions(updatedTx);
+      try {
+        localStorage.setItem('pmt_cached_transactions', JSON.stringify(updatedTx));
+      } catch (e) {}
+    } else {
+      const updatedEarn = earnings.filter(e => (e.id || e.rowNumber) !== targetId);
+      setEarnings(updatedEarn);
+      try {
+        localStorage.setItem('pmt_cached_earnings', JSON.stringify(updatedEarn));
+      } catch (e) {}
+    }
+
+    setDeleteItem(null);
+
     try {
-      if (deleteItem.recordType === 'expense') {
-        await deleteTransactionApi(deleteItem.id || deleteItem.rowNumber);
+      if (targetType === 'expense') {
+        await deleteTransactionApi(targetId);
       } else {
-        await deleteEarningApi(deleteItem.id || deleteItem.rowNumber);
+        await deleteEarningApi(targetId);
       }
-      toast.success(`${deleteItem.recordType === 'expense' ? 'Transaction' : 'Income'} deleted successfully.`);
-      setDeleteItem(null);
+      toast.success(`${targetType === 'expense' ? 'Transaction' : 'Income'} deleted successfully.`);
       fetchRecords();
     } catch (err) {
-      toast.error('Failed to delete item. Please try again.');
+      toast.error('Failed to delete item from Google Sheets. Re-syncing...');
+      fetchRecords();
     } finally {
       setDeleting(false);
     }
