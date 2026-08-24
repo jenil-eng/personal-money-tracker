@@ -52,9 +52,11 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10">
         {/* Brand Logo Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl text-white shadow-xl shadow-indigo-600/25 mb-4">
-            <Wallet className="w-8 h-8" />
-          </div>
+          <img 
+            src="/icon-512.png" 
+            alt="Money Tracker Logo" 
+            className="w-16 h-16 rounded-2xl shadow-xl shadow-indigo-600/30 border border-white/10 object-cover mb-4 inline-block transform hover:scale-105 transition-transform duration-300" 
+          />
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Personal Money Tracker</h1>
           <p className="mt-2 text-sm text-slate-400">Private Finance Dashboard</p>
 
