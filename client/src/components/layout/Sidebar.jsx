@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../assets/logo.png';
 import { 
   Home, 
   ArrowDownCircle, 
@@ -46,7 +47,7 @@ export default function Sidebar() {
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950 border-b border-slate-800/80 px-4 py-3 pt-safe flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-2.5">
-          <img src="/icon-512.png" alt="Money Tracker Logo" className="w-10 h-10 object-contain drop-shadow-[0_4px_12px_rgba(99,102,241,0.35)]" />
+          <img src={logoImg} alt="Money Tracker Logo" className="w-10 h-10 object-contain drop-shadow-[0_4px_12px_rgba(99,102,241,0.35)]" />
           <div>
             <h1 className="font-bold text-white text-base leading-none">Money Tracker</h1>
             <span className="text-[11px] text-indigo-400 font-medium">My Personal Expenses</span>
@@ -93,7 +94,7 @@ export default function Sidebar() {
         <div>
           <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <img src="/icon-512.png" alt="Money Tracker Logo" className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(99,102,241,0.35)]" />
+              <img src={logoImg} alt="Money Tracker Logo" className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(99,102,241,0.35)]" />
               <div>
                 <h2 className="font-bold text-white text-lg tracking-tight">Money Tracker</h2>
                 <p className="text-xs text-indigo-400 font-medium">My Personal Expenses</p>
