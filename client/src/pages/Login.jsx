@@ -55,7 +55,7 @@ export default function Login() {
           <img 
             src="/icon-512.png" 
             alt="Money Tracker Logo" 
-            className="w-16 h-16 rounded-2xl shadow-xl shadow-indigo-600/30 border border-white/10 object-cover mb-4 inline-block transform hover:scale-105 transition-transform duration-300" 
+            className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-[0_12px_28px_rgba(99,102,241,0.45)] object-contain mb-3 inline-block transform hover:scale-105 transition-transform duration-300" 
           />
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Personal Money Tracker</h1>
           <p className="mt-2 text-sm text-slate-400">Private Finance Dashboard</p>
